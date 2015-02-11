@@ -1,5 +1,6 @@
 package graphene.instagram.model.graphserver;
 
+import graphene.business.commons.DocumentError;
 import graphene.dao.CombinedDAO;
 import graphene.dao.DocumentGraphParser;
 import graphene.dao.GenericDAO;
@@ -10,6 +11,7 @@ import graphene.model.idl.G_IdType;
 import graphene.model.idl.G_SearchTuple;
 import graphene.model.query.EntityQuery;
 import graphene.services.PropertyHyperGraphBuilder;
+import graphene.util.DataFormatConstants;
 import graphene.util.StringUtils;
 import graphene.util.validator.ValidationUtils;
 
@@ -26,6 +28,7 @@ import mil.darpa.vande.generic.V_GraphQuery;
 import mil.darpa.vande.generic.V_LegendItem;
 import mil.darpa.vande.generic.V_NodeList;
 
+import org.apache.tapestry5.alerts.Severity;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.PostInjection;
 import org.slf4j.Logger;
@@ -379,6 +382,81 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 
 	}
 
+	@Override
+	public V_GenericNode createOrUpdateNode(final double minimumScoreRequired, final double inheritedScore,
+			final double localPriority, final String originalId, final String idType, final String nodeType,
+			final V_GenericNode attachTo, final String relationType, final String relationValue,
+			final double nodeCertainty) {
+		V_GenericNode a = null;
+
+		if (ValidationUtils.isValid(originalId)) {
+			if (!stopwordService.isValid(originalId)) {
+				addError(new DocumentError("Bad Identifier", "The " + nodeType + " (" + originalId + ") contains a stopword", Severity.WARN));
+			} else {
+				final String id = generateNodeId(originalId);
+				a = nodeList.getNode(id);
+				final double calculatedPriority = inheritedScore * localPriority;
+				if (a == null) {
+					a = new V_GenericNode(id);
+					a.setIdType(idType);
+					// This is important because we use it to search on the next traversal.
+					a.setIdVal(originalId);
+					a.setNodeType(nodeType);
+					a.setColor(style.getHexColorForNode(a.getNodeType()));
+					a.setMinScore(minimumScoreRequired);
+					a.setPriority(calculatedPriority);
+					// Remove leading zeros from the label
+					a.setLabel(StringUtils.removeLeadingZeros(originalId));
+					// XXX: need a way of getting the link to the page with TYPE
+					a.addData(nodeType, getCombinedSearchLink(nodeType, originalId));
+					nodeList.addNode(a);
+					legendItems.add(new V_LegendItem(a.getColor(), a.getNodeType()));
+				}
+				// now we have a valid node. Attach it to the other node
+				// provided.
+				if (ValidationUtils.isValid(attachTo)) {
+					final String key = generateEdgeId(attachTo.getId(), relationType, a.getId());
+					if ((key != null) && !edgeMap.containsKey(key)) {
+						final V_GenericEdge edge = new V_GenericEdge(a, attachTo);
+						edge.setIdType(relationType);
+						edge.setLabel(null);
+						edge.setIdVal(relationType);
+						if (nodeCertainty < 100.0) {
+							edge.addData("Certainty", DataFormatConstants.formatPercent(nodeCertainty));
+							edge.setLineStyle("dotted");
+							// edge.setColor("#787878");
+						}
+						// if this is a LIKE edge
+						if (relationType.equals(G_CanonicalRelationshipType.LIKES.name())) {
+							edge.setColor("blue");
+							edge.setLabel("+1");
+						
+						// if this is an OWNER_OF edge that is connected to a "MEDIA" node... 
+						} else if (relationType.equals(G_CanonicalRelationshipType.OWNER_OF.name()) 
+							&& (attachTo.getIdType().equals(G_CanonicalPropertyType.REPORT_ID.name()) 
+								|| a.getIdType().equals(G_CanonicalPropertyType.REPORT_ID.name()))) {
+							edge.setColor("green");
+							edge.setCount(3);
+						}
+						edge.addData("Local_Priority", "" + localPriority);
+						edge.addData("Min_Score_Required", "" + minimumScoreRequired);
+						edge.addData("Parent_Score", "" + inheritedScore);
+						edge.addData("Value", StringUtils.coalesc(" ", a.getLabel(), relationValue, attachTo.getLabel()));
+						edgeMap.put(key, edge);
+					}
+
+					// if this flag is set, we'll add the attributes to the attached node.
+					if (/*INHERIT_ATTRIBUTES*/ true) {
+						attachTo.inheritPropertiesOfExcept(a, skipInheritanceTypes);
+					}
+				}
+			}
+		} else {
+			logger.error("Invalid id for " + nodeType + " of node " + attachTo);
+		}
+		return a;
+	}
+	
 	private void setupNodeInheritance() {
 		// TODO Auto-generated method stub
 		skipInheritanceTypes = new ArrayList<String>();
