@@ -1,0 +1,43 @@
+<html t:type="graphene/layout" title="Contact graphene-fincen-web"
+	xmlns:t="http://tapestry.apache.org/schema/tapestry_5_3.xsd" xmlns:p="tapestry:parameter">
+
+	<t:zone t:id="listZone" id="listZone" t:update="prop:zoneUpdateFunction">
+		<t:form class="dropzone" t:id="mydropzone" t:zone="listZone">
+			<t:errors />
+			<input t:type="upload" t:id="file" t:value="file" validate="required" />
+			<br />
+			<input type="submit" value="Upload" />
+		</t:form>
+
+
+		<div>
+			<t:if test="results">
+				<table>
+					<th>
+						<td>Word</td>
+						<td>Answer</td>
+					</th>
+					<t:loop source="results" value="currentResult" index="index">
+						<tr>
+							<t:if test="currentResult">
+								<td>
+									${currentResult.word}
+								</td>
+								<td> ${currentResult.answer}</td>
+								<p:else>
+									<td>
+										Error reading NER line ${index}</td>
+								</p:else>
+							</t:if>
+
+						</tr>
+					</t:loop>
+				</table>
+				<p:else>
+					No text to analyze yet.
+				</p:else>
+			</t:if>
+
+		</div>
+	</t:zone>
+</html>
