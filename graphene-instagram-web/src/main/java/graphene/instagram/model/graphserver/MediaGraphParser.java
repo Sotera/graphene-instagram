@@ -115,6 +115,7 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 					
 					if (ValidationUtils.isValid(commentNode)) {
 						commentNode.addData("Comment Text", comment.getText());
+						commentNode.setLabel(comment.getTextSample());
 					}
 					
 					if (ValidationUtils.isValid(comment.getUsername())) {
@@ -309,6 +310,11 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 		p.setAdditionalProperty(REPORT_ID, p.getId());
 		p.setAdditionalProperty(REPORT_LINK, p.getLink());
 		p.setAdditionalProperty(FIRST_DATE, p.getCreatedTime());
+		// FIXME: using literal strings instead of strings defined in AbstractDocumentParser
+		p.setAdditionalProperty("ATS_IN_CAPTION", p.getAtsInCaption());
+		p.setAdditionalProperty("ATS_IN_COMMENTS", p.getAtsInComments());
+		p.setAdditionalProperty("HASHTAGS_IN_CAPTION", p.getHashTagsInCaption());
+		p.setAdditionalProperty("HASHTAGS_IN_COMMENTS", p.getHashTagsInComments());
 		
 		return p;
 	}
