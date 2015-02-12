@@ -74,9 +74,9 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 			phgb.addScannedResult(reportId);
 			// report node does not attach to anything.
 			final V_GenericNode reportNode = phgb.createOrUpdateNode(reportId,
-					G_CanonicalPropertyType.REPORT_ID.name(), G_CanonicalPropertyType.REPORT_ID.name(), null, null,
+					G_CanonicalPropertyType.MEDIA.name(), G_CanonicalPropertyType.MEDIA.name(), null, null,
 					null);
-			reportNode.setLabel((String) p.getAdditionalProperties().get(REPORT_LABEL));
+			reportNode.setLabel((String) p.getAdditionalProperties().get(MEDIA_LABEL));
 			reportNode.addData("Type", (String) p.getAdditionalProperties().get(REPORT_TYPE));
 
 //			reportNode.addData(reportLinkTitle, getReportViewerLink("BSARReport", reportId));		
@@ -148,167 +148,16 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 
 	@Override
 	public Media populateExtraFields(final Media p, final EntityQuery sq) {
-//		resetLists();
-//		if (ValidationUtils.isValid(p.getSUBJECTS())) {
-//			Integer number = 1;
-//			for (final Subject s : p.getSUBJECTS()) {
-//				s.setAdditionalProperty(NUMBER, number.toString());
-//				number++;
-//				if (ValidationUtils.isValid(s.getSubjectAddress())) {
-//					for (final SubjectAddress sa : s.getSubjectAddress()) {
-//						addSafeString(G_CanonicalPropertyType.ADDRESS.name(), subjectAddressList,
-//								sa.getEnhancedFullAddress());
-//						if (s.getAdditionalProperties().get(LABEL2) == null) {
-//							s.setAdditionalProperty(LABEL2, sa.getEnhancedFullAddress());
-//						}
-//					}
-//				}
-//				if (ValidationUtils.isValid(s.getSubjectEmail())) {
-//
-//					for (final SubjectEmail se : s.getSubjectEmail()) {
-//						addSafeString(G_CanonicalPropertyType.EMAIL_ADDRESS.name(), subjectCIDList,
-//								se.getEmailAddress());
-//					}
-//				}
-//				if (ValidationUtils.isValid(s.getSubjectPhone())) {
-//
-//					for (final SubjectPhone sp : s.getSubjectPhone()) {
-//						addSafeStringWithTitle(G_CanonicalPropertyType.PHONE.name(), sp.getPhoneType(), subjectCIDList,
-//								sp.getPhoneNumber(), sp.getPhoneExtension());
-//					}
-//				}
-//
-//				if (ValidationUtils.isValid(s.getSubjectId())) {
-//					for (final SubjectId si : s.getSubjectId()) {
-//						addSafeStringWithTitle(G_CanonicalPropertyType.GOVERNMENTID.name(),
-//								si.getMethodOfIdentification(), subjectIDList, si.getIdentificationNumber(),
-//								si.getOtherIssuerState(), si.getOtherIssuerCountry());
-//
-//					}
-//				}
-//				if (ValidationUtils.isValid(s.getSubjectAlternateName())) {
-//					for (final SubjectAlternateName san : s.getSubjectAlternateName()) {
-//						addSafeStringWithTitle(G_CanonicalPropertyType.NAME.name(), san.getNameType(), subjectNameList,
-//								san.getFullName());
-//					}
-//				}
-//				addSafeString(G_CanonicalPropertyType.NAME.name(), subjectNameList, s.getCompleteName());
-//				addSafeStringWithTitle(G_CanonicalPropertyType.OCCUPATION.name(), "Occupation", subjectIDList,
-//						s.getOccupationOrBusinessType());
-//
-//				s.setAdditionalProperty(LABEL, s.getCompleteName());
-//
-//			}
-//		}
-//		p.setAdditionalProperty(SUBJECTADDRESSLIST, subjectAddressList);
-//		p.setAdditionalProperty(SUBJECTCIDLIST, subjectCIDList);
-//		p.setAdditionalProperty(SUBJECTIDLIST, subjectIDList);
-//		p.setAdditionalProperty(SUBJECTNAMELIST, subjectNameList);
-//
-//		if (ValidationUtils.isValid(p.getNARR())) {
-//			p.setAdditionalProperty(NARRATIVE, p.getNARR());
-//		}
-//
-//		p.setAdditionalProperty(
-//				ICONLIST,
-//				iconService.getIconsForText((String) p.getAdditionalProperties().get(NARRATIVE),
-//						sq.getAttributeValues()));
-//
-//		// pagelink
-//		p.setAdditionalProperty(REPORT_LINK, "reports/BSARReport");
-//		p.setAdditionalProperty(REPORT_TYPE, getReportType());
-//		p.setAdditionalProperty(REPORT_ID, getReportId(p));
-//		p.setAdditionalProperty(REPORT_LABEL, getReportLabel(p));
-//
-//		Double sum = 0d;
-//
-//		final SuspiciousActivity t = p.getSUSPICIOUSACTIVITY();
-//		if (ValidationUtils.isValid(t.getCumulativeAmount())) {
-//			try {
-//
-//				sum += (Double) t.getCumulativeAmount();
-//			} catch (final Exception e) {
-//				logger.error("Could not parse cumulative amount " + t.getCumulativeAmount());
-//			}
-//		} else if (ValidationUtils.isValid(t.getTransactionAmnt())) {
-//			try {
-//
-//				sum += (Double) t.getTransactionAmnt();
-//			} catch (final Exception e) {
-//				logger.error("Could not parse transaction amount " + t.getTransactionAmnt());
-//			}
-//		}
-//		if (ValidationUtils.isValid(t.getDateTransaction())) {
-//			datesOfEvent.add(t.getDateTransaction().toString());
-//		}
-//		if (ValidationUtils.isValid(t.getDateTransactionTo())) {
-//			datesOfEvent.add(t.getDateTransactionTo().toString());
-//		}
-//
-//		p.setAdditionalProperty(TOTALAMOUNTNBR, sum);
-//		final String amountString = new DecimalFormat(DataFormatConstants.MONEY_FORMAT_STRING).format(sum);
-//		p.setAdditionalProperty(TOTALAMOUNTSTR, amountString);
-//		/**
-//		 * Filing Institution
-//		 */
-//		Integer fileInstNumber = 1;
-//		final FilingInstitution filingInst = p.getFILINST();
-//
-//		filingInst.setAdditionalProperty(NUMBER, fileInstNumber.toString());
-//		fileInstNumber++;
-//		final String coalescName = StringUtils.coalesc(" ", filingInst.getLegalName(), filingInst.getID());
-//		filingInst.setAdditionalProperty(LABEL, coalescName);
-//		filingInst.setAdditionalProperty(LABEL2, StringUtils.coalesc(", ", filingInst.getEnhancedStreetAddress1(),
-//				filingInst.getEnhancedCity(), filingInst.getEnhancedState(), filingInst.getEnhancedZip(),
-//				filingInst.getEnhancedCountryName()));
-//		/**
-//		 * Financial Institutions
-//		 */
-//		Integer finInstNumber = 1;
-//		for (final FinancialInstitution financialInst : p.getFININST()) {
-//			{
-//
-//				financialInst.setAdditionalProperty(NUMBER, finInstNumber.toString());
-//				finInstNumber++;
-//
-//				final String coalescFinName = StringUtils.coalesc(" ", financialInst.getLegalName(),
-//						financialInst.getID());
-//				financialInst.setAdditionalProperty(LABEL, coalescFinName);
-//
-//				financialInst.setAdditionalProperty(
-//						LABEL2,
-//						StringUtils.coalesc(", ", financialInst.getEnhancedStreetAddress1(),
-//								financialInst.getEnhancedCity(), financialInst.getEnhancedState(),
-//								financialInst.getEnhancedZip(), financialInst.getEnhancedCountry()));
-//			}
-//		}
-//
-//		addSafeString(datesFiled, p.getDETAILS().getDateFiled());
-//		addSafeString(datesReceived, p.getDETAILS().getDateReceived());
-//
-//		p.setAdditionalProperty(DATES_RECEIVED, datesReceived);
-//		p.setAdditionalProperty(DATES_FILED, datesFiled);
-//		p.setAdditionalProperty(DATES_OF_EVENTS, datesOfEvent);
-//
-//		final ArrayList<String> allDates = new ArrayList<String>(1);
-//		allDates.addAll(datesFiled);
-//		allDates.addAll(datesReceived);
-//		allDates.addAll(datesOfEvent);
-//
-//		if (ValidationUtils.isValid(allDates) && (allDates.size() > 1)) {
-//
-//			Collections.sort(allDates);
-//			p.setAdditionalProperty(FIRST_DATE, allDates.get(0));
-//			p.setAdditionalProperty(LAST_DATE, allDates.get(allDates.size() - 1));
-//		} else {
-//			p.setAdditionalProperty(FIRST_DATE, "Unknown");
-//			p.setAdditionalProperty(LAST_DATE, "Unknown");
-//		}
+
+		p.setAdditionalProperty(MEDIA_LABEL, getReportLabel(p));
+		p.setAdditionalProperty(MEDIA_ID, p.getId());
+		p.setAdditionalProperty(MEDIA_LINK, p.getLink());
+		p.setAdditionalProperty(MEDIA_OWNER, p.getUsername());
+		p.setAdditionalProperty(MEDIA_CREATED_TIME, p.getCreatedTime());
+		p.setAdditionalProperty(MEDIA_CAPTION_TEXT, p.getCaptionText());
+		p.setAdditionalProperty(MEDIA_LIKE_COUNT, p.getLikes().getCount());
+		p.setAdditionalProperty(MEDIA_COMMENT_COUNT, p.getComments().getCount());
 		
-		p.setAdditionalProperty(REPORT_LABEL, getReportLabel(p));
-		p.setAdditionalProperty(REPORT_ID, p.getId());
-		p.setAdditionalProperty(REPORT_LINK, p.getLink());
-		p.setAdditionalProperty(FIRST_DATE, p.getCreatedTime());
 		
 		return p;
 	}
