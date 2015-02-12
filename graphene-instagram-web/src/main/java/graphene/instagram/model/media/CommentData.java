@@ -140,4 +140,12 @@ public class CommentData {
         this.additionalProperties.put(name, value);
     }
 
+    public String getTextSample() {
+    	String sample = this.text;
+    	int maxLength = 15;
+    	if (sample.length() > maxLength) {
+    		sample = sample.substring(0, maxLength) + "...";
+    	}
+    	return sample;
+    }
 }

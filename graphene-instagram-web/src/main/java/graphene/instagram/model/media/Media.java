@@ -1,15 +1,24 @@
 
 package graphene.instagram.model.media;
 
+import graphene.util.Tuple;
+
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.annotation.Generated;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -264,4 +273,37 @@ public class Media {
         this.additionalProperties.put(name, value);
     }
 
+    private Collection<Tuple<String, String>> getSpecialTokens(char delimiter, String text) {
+    	Pattern MY_PATTERN = Pattern.compile(delimiter + "(\\w+|\\W+)");
+    	Matcher mat = MY_PATTERN.matcher(text);
+    	Collection<Tuple<String, String>> l = new ArrayList<Tuple<String, String>>();
+    	while (mat.find()) {
+    	  l.add(new Tuple<String, String>(delimiter + mat.group(1), mat.group(1)));
+    	}
+    	return l;
+    }
+    
+    public Collection<Tuple<String, String>> getAtsInCaption() {
+    	return getSpecialTokens('@', this.getCaptionText());
+    }
+    
+    public Collection<Tuple<String, String>> getAtsInComments() {
+    	String comments = "";
+    	for (CommentData cd : this.getComments().getCommentsData()) {
+    		comments += cd.getText() + " ";
+    	}
+    	return getSpecialTokens('@', comments);
+    }
+    
+    public Collection<Tuple<String, String>> getHashTagsInCaption() {
+    	return getSpecialTokens('#', this.getCaptionText());
+    }
+    
+    public Collection<Tuple<String, String>> getHashTagsInComments() {
+    	String comments = "";
+    	for (CommentData cd : this.getComments().getCommentsData()) {
+    		comments += cd.getText() + " ";
+    	}
+    	return getSpecialTokens('#', comments);
+    }
 }
