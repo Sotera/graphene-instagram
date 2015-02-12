@@ -433,8 +433,8 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 						
 						// if this is an OWNER_OF edge that is connected to a "MEDIA" node... 
 						} else if (relationType.equals(G_CanonicalRelationshipType.OWNER_OF.name()) 
-							&& (attachTo.getIdType().equals(G_CanonicalPropertyType.REPORT_ID.name()) 
-								|| a.getIdType().equals(G_CanonicalPropertyType.REPORT_ID.name()))) {
+							&& (attachTo.getIdType().equals(G_CanonicalPropertyType.MEDIA.name()) 
+								|| a.getIdType().equals(G_CanonicalPropertyType.MEDIA.name()))) {
 							edge.setColor("green");
 							edge.setCount(3);
 						}
