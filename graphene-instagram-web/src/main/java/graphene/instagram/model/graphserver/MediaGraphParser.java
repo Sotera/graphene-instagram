@@ -158,6 +158,7 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 		p.setAdditionalProperty(MEDIA_CAPTION_TEXT, p.getCaptionText());
 		p.setAdditionalProperty(MEDIA_LIKE_COUNT, p.getLikes().getCount());
 		p.setAdditionalProperty(MEDIA_COMMENT_COUNT, p.getComments().getCount());
+		p.setAdditionalProperty(MEDIA_THUMBNAIL, p.getThumbnail());
 		
 		if (p.getLocation().getLatitude()!=null && p.getLocation().getLongitude()!=null) {
 			p.setAdditionalProperty(MEDIA_LOCATION_LATLON, p.getLocation().getLatitude() + ", " + p.getLocation().getLongitude());

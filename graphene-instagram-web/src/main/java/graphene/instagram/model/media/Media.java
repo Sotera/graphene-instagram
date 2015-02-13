@@ -67,6 +67,9 @@ public class Media {
     @JsonProperty("username")
     private String username;
     
+    @JsonProperty("thumbnail")
+    private String thumbnail;
+    
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -250,7 +253,15 @@ public class Media {
         this.username = username;
     }
 
-    @Override
+    public String getThumbnail() {
+		return thumbnail;
+	}
+
+	public void setThumbnail(String thumbnail) {
+		this.thumbnail = thumbnail;
+	}
+
+	@Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
