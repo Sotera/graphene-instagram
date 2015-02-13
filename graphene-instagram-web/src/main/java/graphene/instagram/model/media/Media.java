@@ -6,7 +6,9 @@ import graphene.util.Tuple;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -273,21 +275,21 @@ public class Media {
         this.additionalProperties.put(name, value);
     }
 
-    private Collection<Tuple<String, String>> getSpecialTokens(char delimiter, String text) {
+    private Set<Tuple<String, String>> getSpecialTokens(char delimiter, String text) {
     	Pattern MY_PATTERN = Pattern.compile(delimiter + "(\\w+|\\W+)");
     	Matcher mat = MY_PATTERN.matcher(text);
-    	Collection<Tuple<String, String>> l = new ArrayList<Tuple<String, String>>();
+    	Set<Tuple<String, String>> l = new HashSet<Tuple<String, String>>();
     	while (mat.find()) {
     	  l.add(new Tuple<String, String>(delimiter + mat.group(1), mat.group(1)));
     	}
     	return l;
     }
     
-    public Collection<Tuple<String, String>> getAtsInCaption() {
+    public Set<Tuple<String, String>> getAtsInCaption() {
     	return getSpecialTokens('@', this.getCaptionText());
     }
     
-    public Collection<Tuple<String, String>> getAtsInComments() {
+    public Set<Tuple<String, String>> getAtsInComments() {
     	String comments = "";
     	for (CommentData cd : this.getComments().getCommentsData()) {
     		comments += cd.getText() + " ";
@@ -295,11 +297,11 @@ public class Media {
     	return getSpecialTokens('@', comments);
     }
     
-    public Collection<Tuple<String, String>> getHashTagsInCaption() {
+    public Set<Tuple<String, String>> getHashTagsInCaption() {
     	return getSpecialTokens('#', this.getCaptionText());
     }
     
-    public Collection<Tuple<String, String>> getHashTagsInComments() {
+    public Set<Tuple<String, String>> getHashTagsInComments() {
     	String comments = "";
     	for (CommentData cd : this.getComments().getCommentsData()) {
     		comments += cd.getText() + " ";
