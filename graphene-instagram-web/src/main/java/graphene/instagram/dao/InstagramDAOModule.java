@@ -219,7 +219,7 @@ public class InstagramDAOModule {
 	}
 
 	public void contributeApplicationDefaults(final MappedConfiguration<String, String> configuration) {
-		configuration.add(MITIEModule.ENABLED, "false");
+		configuration.add(MITIEModule.ENABLED, "true");
 		// Elastic Search defaults (if no es.properties file is provided)
 		configuration.add(JestModule.ES_SERVER, ESUrlConstants.defaultHost);
 		configuration.add(JestModule.ES_SEARCH_INDEX, ESUrlConstants.defaultIndex1);

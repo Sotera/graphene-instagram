@@ -1,30 +1,36 @@
 package graphene.instagram.web.pages.experimental;
 
 import graphene.business.commons.exception.DataAccessException;
+import graphene.model.idl.G_SearchType;
+import graphene.model.idl.G_SymbolConstants;
 import graphene.model.idl.G_VisualType;
 import graphene.util.validator.ValidationUtils;
 import graphene.web.annotations.PluginPage;
+import graphene.web.pages.CombinedEntitySearchPage;
 import graphene.web.pages.SimpleBasePage;
 
+import org.apache.tapestry5.Link;
 import org.apache.tapestry5.PersistenceConstants;
 import org.apache.tapestry5.alerts.AlertManager;
 import org.apache.tapestry5.alerts.Duration;
 import org.apache.tapestry5.alerts.Severity;
 import org.apache.tapestry5.annotations.Component;
 import org.apache.tapestry5.annotations.InjectComponent;
+import org.apache.tapestry5.annotations.InjectPage;
 import org.apache.tapestry5.annotations.OnEvent;
 import org.apache.tapestry5.annotations.Persist;
 import org.apache.tapestry5.annotations.Property;
 import org.apache.tapestry5.corelib.components.Form;
 import org.apache.tapestry5.corelib.components.Zone;
 import org.apache.tapestry5.ioc.annotations.Inject;
+import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.apache.tapestry5.services.Request;
 import org.graphene.augment.mitie.dao.MitieDAO;
 import org.graphene.augment.mitie.model.MitieEntity;
 import org.graphene.augment.mitie.model.MitieResponse;
 import org.slf4j.Logger;
 
-@PluginPage(visualType = G_VisualType.EXPERIMENTAL, menuName = "Entity Extraction", icon = "fa fa-lg fa-fw fa-cogs")
+@PluginPage(visualType = G_VisualType.TOP, menuName = "Entity Extraction", icon = "fa fa-lg fa-fw fa-cogs")
 public class EntityExtraction extends SimpleBasePage {
 
 	@Inject
@@ -56,6 +62,13 @@ public class EntityExtraction extends SimpleBasePage {
 
 	@InjectComponent
 	private Zone extractionZone;
+	
+	@InjectPage
+	private CombinedEntitySearchPage searchPage;
+	
+	@Inject
+	@Symbol(G_SymbolConstants.DEFAULT_MAX_SEARCH_RESULTS)
+	private Integer defaultMaxResults;
 
 	@OnEvent(value = "cancel")
 	void cancel() {
@@ -96,6 +109,12 @@ public class EntityExtraction extends SimpleBasePage {
 			style = "fa fa-lg fa-fw fa-question";
 		}
 		return style;
+	}
+	
+	public Link getNamePivotLink(final String term) {
+		// XXX: pick the right search type based on the link value
+		final Link l = searchPage.set(null, "media", G_SearchType.COMPARE_EQUALS.name(), term, defaultMaxResults);
+		return l;
 	}
 
 	Object onFailureFromAugmentTextForm() {
