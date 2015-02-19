@@ -226,9 +226,10 @@
             // GLegend is global and accessible anywhere in the app
 			GLegend = new Legend();
 			GLegend.addLegendItems([
-			    {groupNames: ["graph_legend"], iconPath: Config.coreImagesUrl+"solid_edge.png", text: "Structured Field"},
-				{groupNames: ["graph_legend"], iconPath: Config.coreImagesUrl+"dotted_edge.png", text: "Extracted From Narrative"},
-			    {groupNames: ["graph_legend"], iconPath: Config.coreImagesUrl+"dashed_edge.png", text: "User-generated"}
+			    {groupNames: ["graph_legend"], iconPath: Config.coreImagesUrl+"solid_edge.png", text: "Comment link"},
+			    {groupNames: ["graph_legend"], iconPath: Config.imagesUrl+"solid_edge-OP.png", text: "Image Poster link"},
+			    {groupNames: ["graph_legend"], iconPath: Config.imagesUrl+"solid_edge-likes.png", text: "'Likes' link"},
+			    {groupNames: ["graph_legend"], iconPath: Config.coreImagesUrl+"dashed_edge.png", text: "User-Generated link"}
 			]);
 			// if you only have one legend type in the app, setting the default makes it easier to access without having to
 			// remember the key "graph_legend" anywhere else.
