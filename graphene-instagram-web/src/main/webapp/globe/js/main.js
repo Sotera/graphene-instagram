@@ -11,7 +11,7 @@ var glContainer = document.getElementById('glContainer');
 // contains a list of country codes with their matching country names
 var isoFile = 'globe/country_iso3166.json';
 var latlonFile = 'globe/country_lat_lon.json'
-// /graphene-fincen-web/assets/4.0.8/ctx/globe/country_iso3166.json
+// /graphene-instagram-web/assets/4.0.8/ctx/globe/country_iso3166.json
 var camera, scene, renderer, controls;
 
 var pinsBase, pinsBaseMat;

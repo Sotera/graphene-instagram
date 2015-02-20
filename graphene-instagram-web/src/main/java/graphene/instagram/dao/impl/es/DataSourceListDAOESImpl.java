@@ -105,54 +105,9 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 	 */
 	@Override
 	public DataSourceList getList() {
-		if (dataSourceList == null) {
-			dataSourceList = loadList();
-		}
+		final DataSourceList list = new DataSourceList();
 
 		return dataSourceList;
-	}
-
-	private DataSourceList loadList() {
-		final DataSourceList list = new DataSourceList();
-		// such datasource
-		list.addSource(makeFinCEN());
-		// add more data sources here if you want. wow.
-		return list;
-	}
-
-	private DataSource makeFinCEN() {
-		final DataSource dataSource = new DataSource();
-		DataSet ds = new DataSet();
-
-		dataSource.setId("FinCEN");
-		dataSource.setName("FinCEN");
-		dataSource.setFriendlyName("FinCEN List");
-
-		dataSource.addProperty("Country", "USA");
-
-		ds.setName("Entities");
-		ds.setEntity(true);
-		ds.setTransaction(false);
-
-		ds.addField(new DataSetField("name", "Name", "string", false, true, true));
-		ds.addField(new DataSetField("email", "Email Address", "string", false, true, true));
-		ds.addField(new DataSetField("tin", "TIN/EIN/Passport/Visa", "string", false, true, true));
-		ds.addField(new DataSetField("address", "Address", "string", false, true, true));
-		ds.addField(new DataSetField("phone", "Phone", "string", false, true, true));
-		ds.addField(new DataSetField("reportid", "Report Id", "string", false, true, true));
-		ds.addField(new DataSetField("date", "Date", "string", false, true, true));
-		ds.addField(new DataSetField("vin", "VIN", "string", false, true, true));
-		ds.addField(new DataSetField("date", "Date", "string", false, true, true));
-		ds.addField(new DataSetField("any", "Any", "string", false, true, true));
-		dataSource.addDataSet(ds);
-
-		ds = new DataSet();
-		ds.setName("SARs");
-		ds.setEntity(false);
-		ds.setTransaction(true);
-		dataSource.addDataSet(ds);
-
-		return dataSource;
 	}
 
 }

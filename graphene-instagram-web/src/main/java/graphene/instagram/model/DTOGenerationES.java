@@ -72,13 +72,6 @@ public class DTOGenerationES {
 	public static void generateFromFiles(final GenerateModel gm,
 			final String outputDirectory) throws MalformedURLException,
 			Exception {
-		//
-		// gm.buildModel(new URL("file:///T:/fincen/model/es.8300.model2.json"),
-		// "ESF8300", "graphene.fincen.model.es.F8300", outputDirectory);
-		//
-		// gm.buildModel(new URL("file:///T:/fincen/model/es.CMIR.model2.json"),
-		// "ESFCMIR", "graphene.fincen.model.es.FCMIR", outputDirectory);
-
 	}
 
 	List<Triple<String, String, String>> convertToArrays;
