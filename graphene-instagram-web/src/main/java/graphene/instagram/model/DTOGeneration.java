@@ -67,7 +67,7 @@ public class DTOGeneration {
 		mainDB = registry.getService(DBConnectionPoolService.class,
 				MainDB.class);
 
-		// For FinCEN, the secondary database is not needed, yet.
+		// For Instagram, the secondary database is not needed, yet.
 		// secondaryDB = registry.getService(DBConnectionPoolService.class,
 		// SecondaryDB.class);
 	}
@@ -133,8 +133,8 @@ public class DTOGeneration {
 	 */
 	public static void main(String[] args) throws Exception {
 		setup();
-		//generateDTO(mainDB, "F%", "graphene.fincen.model.sql.fincen");
-		generateDTO(mainDB, "G%", "graphene.fincen.model.sql.fincen");
+		//generateDTO(mainDB, "F%", "graphene.instagram.model.sql.instagram");
+		generateDTO(mainDB, "G%", "graphene.instagram.model.sql.instagram");
 		System.out.println("done");
 	}
 

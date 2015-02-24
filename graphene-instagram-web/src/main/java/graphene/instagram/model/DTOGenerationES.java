@@ -7,7 +7,6 @@ import graphene.model.GenerateModel;
 import graphene.util.Triple;
 import graphene.util.Tuple;
 import graphene.util.UtilModule;
-import graphene.util.net.HttpUtil;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.indices.mapping.GetMapping;
@@ -48,13 +47,9 @@ public class DTOGenerationES {
 	String outputDirectory = "src/main/java";
 	ESRestAPIConnection c;
 
-	static ObjectMapper mapper = new ObjectMapper()
-			.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY); // can
+	static ObjectMapper mapper = new ObjectMapper().enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY); // can
 
 	private Registry registry;
-	// globally
-	static String authorizationEncoding = HttpUtil
-			.getAuthorizationEncoding("bsauser:bs@U$er41ife");
 
 	public final static String baseURL = "";
 
@@ -69,15 +64,8 @@ public class DTOGenerationES {
 	 * @throws MalformedURLException
 	 * @throws Exception
 	 */
-	public static void generateFromFiles(final GenerateModel gm,
-			final String outputDirectory) throws MalformedURLException,
-			Exception {
-		//
-		// gm.buildModel(new URL("file:///T:/fincen/model/es.8300.model2.json"),
-		// "ESF8300", "graphene.fincen.model.es.F8300", outputDirectory);
-		//
-		// gm.buildModel(new URL("file:///T:/fincen/model/es.CMIR.model2.json"),
-		// "ESFCMIR", "graphene.fincen.model.es.FCMIR", outputDirectory);
+	public static void generateFromFiles(final GenerateModel gm, final String outputDirectory)
+			throws MalformedURLException, Exception {
 
 	}
 
@@ -93,8 +81,7 @@ public class DTOGenerationES {
 
 	}
 
-	private void buildFromES(final String typeName, final String outputDirectory)
-			throws Exception {
+	private void buildFromES(final String typeName, final String outputDirectory) throws Exception {
 		final JestClient client = c.getClient();
 		final io.searchbox.indices.mapping.GetMapping.Builder g = new GetMapping.Builder();
 		g.addIndex("instagram");
@@ -102,24 +89,20 @@ public class DTOGenerationES {
 		final GetMapping getMapping = g.build();
 		System.out.println(getMapping.toString());
 		final JestResult jestResult = client.execute(getMapping);
-		final JsonNode node = mapper.readValue(jestResult.getJsonString(),
-				JsonNode.class);
+		final JsonNode node = mapper.readValue(jestResult.getJsonString(), JsonNode.class);
 		final ObjectNode currentType = (ObjectNode) node.findValue(typeName);
 		// This is the name of the class for the report,
-		final String reportClassName = "F" + typeNameToClassName(typeName);
+		final String reportClassName = typeNameToClassName(typeName);
 		// and also the package it's subobjects will be created in.
-		final String packageName = "graphene.instagram.model.instagram."
-				+ reportClassName;
+		final String packageName = "graphene.instagram.model.instagram." + reportClassName;
 
 		// This is the meat of the operation, modifying the elastic search JSON
 		// to do what we want.
-		final ObjectNode modifiedJsonTree = modifyESJSON(currentType,
-				packageName);
+		final ObjectNode modifiedJsonTree = modifyESJSON(currentType, packageName);
 
 		// ES for ElasticSearch
 		// Build the classes.
-		gm.buildModel(modifiedJsonTree.toString(), "ES" + reportClassName,
-				packageName, outputDirectory);
+		gm.buildModel(modifiedJsonTree.toString(), reportClassName, packageName, outputDirectory);
 	}
 
 	/**
@@ -148,8 +131,7 @@ public class DTOGenerationES {
 	 * @throws JsonMappingException
 	 * @throws IOException
 	 */
-	private ObjectNode modifyESJSON(final ObjectNode node,
-			final String packageName) throws JsonParseException,
+	private ObjectNode modifyESJSON(final ObjectNode node, final String packageName) throws JsonParseException,
 			JsonMappingException, IOException {
 
 		if (node == null) {
@@ -158,18 +140,15 @@ public class DTOGenerationES {
 		} else {
 			// The object node passed in needs to have a properties field if we
 			// are to modify it.
-			final ObjectNode mainProperties = (ObjectNode) node
-					.findValue("properties");
+			final ObjectNode mainProperties = (ObjectNode) node.findValue("properties");
 			if (mainProperties != null) {
 				node.put("type", "object");
-				final Iterator<Entry<String, JsonNode>> iterator = mainProperties
-						.fields();
+				final Iterator<Entry<String, JsonNode>> iterator = mainProperties.fields();
 				while (iterator.hasNext()) {
 					final Entry<String, JsonNode> entry = iterator.next();
 					// First look into ALL sub objects
 					logger.debug("Traversing on type " + entry.getKey());
-					final JsonNode newNode = modifyESJSON(
-							(ObjectNode) entry.getValue(), packageName);
+					final JsonNode newNode = modifyESJSON((ObjectNode) entry.getValue(), packageName);
 					if (newNode != null) {
 						mainProperties.put(entry.getKey(), newNode);
 					}
@@ -189,21 +168,15 @@ public class DTOGenerationES {
 							final ObjectNode nodeToConvert = (ObjectNode) mainProperties
 									.get(objectToConvert.getFirst());
 							if (nodeToConvert != null) {
-								final String newClassName = packageName + "."
-										+ objectToConvert.getThird();
-								logger.debug("Found object to convert '"
-										+ objectToConvert.getFirst()
-										+ "' in json node and will be made into class "
-										+ newClassName);
-								final ObjectNode arrayContainer = mapper
-										.createObjectNode();
+								final String newClassName = packageName + "." + objectToConvert.getThird();
+								logger.debug("Found object to convert '" + objectToConvert.getFirst()
+										+ "' in json node and will be made into class " + newClassName);
+								final ObjectNode arrayContainer = mapper.createObjectNode();
 								nodeToConvert.put("type", "object");
 								nodeToConvert.put("javaType", newClassName);
 								arrayContainer.set("items", nodeToConvert);
 								arrayContainer.put("type", "array");
-								mainProperties.replace(
-										objectToConvert.getFirst(),
-										arrayContainer);
+								mainProperties.replace(objectToConvert.getFirst(), arrayContainer);
 							}
 						}
 					}
@@ -215,20 +188,15 @@ public class DTOGenerationES {
 					 */
 					for (final Tuple<String, String> nameToStandardize : standardizeNames) {
 						if (nameToStandardize.getFirst().equals(entry.getKey())) {
-							final ObjectNode nodeToConvert = (ObjectNode) mainProperties
-									.get(nameToStandardize.getFirst());
+							final ObjectNode nodeToConvert = (ObjectNode) mainProperties.get(nameToStandardize
+									.getFirst());
 							if (nodeToConvert != null) {
-								final String newClassName = packageName + "."
-										+ nameToStandardize.getSecond();
-								logger.debug("Found name to standardize: '"
-										+ nameToStandardize.getFirst()
-										+ "' in json node and will be made into class "
-										+ newClassName);
+								final String newClassName = packageName + "." + nameToStandardize.getSecond();
+								logger.debug("Found name to standardize: '" + nameToStandardize.getFirst()
+										+ "' in json node and will be made into class " + newClassName);
 								nodeToConvert.put("type", "object");
 								nodeToConvert.put("javaType", newClassName);
-								mainProperties.replace(
-										nameToStandardize.getFirst(),
-										nodeToConvert);
+								mainProperties.replace(nameToStandardize.getFirst(), nodeToConvert);
 							}
 						}
 					}
@@ -251,15 +219,6 @@ public class DTOGenerationES {
 		c = registry.getService(ESRestAPIConnection.class);
 
 		standardizeNames = new ArrayList<Tuple<String, String>>();
-		standardizeNames.add(new Tuple<String, String>("SUSPICIOUS_ACTIVITY",
-				"SuspiciousActivity"));
-		standardizeNames.add(new Tuple<String, String>("FIL_INST",
-				"FilingInstitution"));
-		standardizeNames
-				.add(new Tuple<String, String>("CURRENCY_TRANSACTION_ACTIVITY",
-						"CurrencyTransactionActivity"));
-		standardizeNames.add(new Tuple<String, String>("DETAILS",
-				"ReportDetails"));
 		// standardizeNames.add(new Tuple<String, String>("ATTACHMENTS",
 		// "AttachementContainer"));
 		/**
@@ -289,52 +248,12 @@ public class DTOGenerationES {
 		 *                    Address' as the label for the bean, etc.
 		 */
 		convertToArrays = new ArrayList<Triple<String, String, String>>();
-		convertToArrays.add(new Triple<String, String, String>("comments",
-				"comments", "Comments"));
+		convertToArrays.add(new Triple<String, String, String>("comments", "comments", "Comments"));
 
-//		convertToArrays.add(new Triple<String, String, String>("FIN_INST",
-//				"FinancialInstitutions", "FinancialInstitution"));
-//
-//		convertToArrays.add(new Triple<String, String, String>(
-//				"currency_transaction_detail", "currency_transaction_detail",
-//				"CurrencyTransactionDetail"));
-//
-//		convertToArrays.add(new Triple<String, String, String>(
-//				"INTERNATIONAL_CURRENCY_TRANSPORTATION",
-//				"INTERNATIONAL_CURRENCY_TRANSPORTATION",
-//				"InternationalCurrencyTransportation"));
-//		convertToArrays.add(new Triple<String, String, String>("ATTACHMENTS",
-//				"ATTACHMENTS", "AttachmentContainer"));
-//		// convertToArrays.add(new Triple<String, String, String>("attachment",
-//		// "attachment", "Attachment"));
-//		// convertToArrays.add(new Triple<String, String, String>("content",
-//		// "content", "String"));
-//		convertToArrays.add(new Triple<String, String, String>("Contacts",
-//				"contacts", "Contact"));
-//		convertToArrays.add(new Triple<String, String, String>(
-//				"subject_address", "subject_addresses", "SubjectAddress"));
-//		convertToArrays.add(new Triple<String, String, String>(
-//				"subject_alternate_name", "subject_alternate_names",
-//				"SubjectAlternateName"));
-//		convertToArrays.add(new Triple<String, String, String>("subject_email",
-//				"subject_emails", "SubjectEmail"));
-//		convertToArrays.add(new Triple<String, String, String>("subject_id",
-//				"subject_ids", "SubjectId"));
-//		convertToArrays.add(new Triple<String, String, String>("subject_phone",
-//				"subject_phones", "SubjectPhone"));
-//		convertToArrays.add(new Triple<String, String, String>(
-//				"law_enforcement", "law_enforcement", "LawEnforcement"));
-//		convertToArrays.add(new Triple<String, String, String>("branch",
-//				"branch", "Branch"));
-//		// suspicious_purchase
-//		convertToArrays.add(new Triple<String, String, String>(
-//				"suspicious_purchase", "suspicious_purchase",
-//				"SuspiciousPurchase"));
 	} // share
 
 	private String typeNameToClassName(final String typeName) {
-		return typeName.toUpperCase().replaceAll("-", "").replaceAll("_", "")
-				.replaceAll("TYPE", "");
+		return typeName.toUpperCase().replaceAll("-", "").replaceAll("_", "").replaceAll("TYPE", "");
 	}
 
 }

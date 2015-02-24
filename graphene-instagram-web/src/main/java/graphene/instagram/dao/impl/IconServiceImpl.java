@@ -14,7 +14,6 @@ import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
 
 public class IconServiceImpl implements IconService {
-	// private HashMap<String, String> iconMap = new HashMap<String, String>();
 	private final HashMap<Pattern, String> iconPatternMap = new HashMap<Pattern, String>();
 	private final HashMap<Pattern, Tuple<String, String>> iconMap = new HashMap<Pattern, Tuple<String, String>>();
 	@Inject
@@ -22,50 +21,13 @@ public class IconServiceImpl implements IconService {
 
 	public IconServiceImpl() {
 		if (iconPatternMap.isEmpty()) {
-			addPattern("\\s(bomb|explos|weapon|gun|ammo|ammunition)", false,
-					"fa fa-sun-o",
-					"Document mentions bombs, explosives, weapons, guns or ammunition");
-			addPattern(
-					"\\s(terror|afghan.*|pakistan|iraq|iran|hezb|isis|isil|aqap|extremist)",
-					false,
-					"fa fa-crosshairs",
-					"Document mentions terror, Afghanistan, Pakistan, Iraq, Iran, Hezbollah or ISIS");
-
-			addPattern("\\s(fraud|launder|money|cash|check|wire)", false,
-					"fa fa-money",
-					"Document mentions fraud, laundering, money, cash, check or wire");
-			addPattern(
-					"\\s(violence|danger|knife|gun|weapon|murder|arson|kill|suicide)",
-					false,
-					"fa fa-warning",
-					"Document mentions violence, danger, knife, guns, weapons, arson, killing, suicide or murder");
-			addPattern("\\s(car|truck|van|motorcycle|vin)\\s", false,
-					"fa fa-truck",
-					"Document mentions cars, trucks or motorcycles");
-			addPattern("\\s(picture|camera|video)", false, "fa fa-camera",
-					"Document mentions pictures or videos");
-			addPattern("\\s(guilty|crime|judge)", false, "fa fa-gavel",
-					"Document mentions guilty, crime or judge");
-			addPattern("\\s(fbi|dea|dod|law enforcement)", false,
-					"fa fa-bell-o",
-					"Document mentions FBI, DEA, DOD or Law Enforcement");
-			addPattern("\\s(phone|cell)", false, "fa fa-phone-square",
-					"Document mentions phones or cell phones");
-
-			addPattern("\\s(network|ring|leader|cartel|organized)", false,
-					"fa fa-sitemap",
-					"Document mentions networks, rings, leaders, cartel or organized crime");
-			addPattern("\\s(youtube|video)", false, "fa fa-youtube-play",
-					"Document mentions videos or youtube");
-			addPattern("\\s(news|report|article)", false, "fa fa-rss-square",
-					"Document mentions news, reports or articles");
-
+			addPattern("\\s(youtube|video)", false, "fa fa-youtube-play", "Document mentions videos or youtube");
 		}
 	}
 
 	@Override
-	public void addPattern(final String pattern, final boolean caseSensitive,
-			final String iconClass, final String reason) {
+	public void addPattern(final String pattern, final boolean caseSensitive, final String iconClass,
+			final String reason) {
 		Pattern p;
 		if (!caseSensitive) {
 			p = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
@@ -79,8 +41,7 @@ public class IconServiceImpl implements IconService {
 	}
 
 	@Override
-	public Collection<Tuple<String, String>> getIconsForText(final String text,
-			final String... otherKeys) {
+	public Collection<Tuple<String, String>> getIconsForText(final String text, final String... otherKeys) {
 		final Collection<Tuple<String, String>> icons = new ArrayList<Tuple<String, String>>();
 		try {
 			if (ValidationUtils.isValid(text, otherKeys)) {
@@ -94,11 +55,9 @@ public class IconServiceImpl implements IconService {
 				}
 				Matcher m2;
 				for (final String o : otherKeys) {
-					m2 = Pattern.compile(o, Pattern.CASE_INSENSITIVE).matcher(
-							text);
+					m2 = Pattern.compile(o, Pattern.CASE_INSENSITIVE).matcher(text);
 					if (m2.find()) {
-						icons.add(new Tuple<String, String>("fa fa-asterisk",
-								"Search term appeared in text"));
+						icons.add(new Tuple<String, String>("fa fa-asterisk", "Search term appeared in text"));
 					}
 					m2.reset();
 				}
@@ -110,8 +69,7 @@ public class IconServiceImpl implements IconService {
 	}
 
 	@Override
-	public Collection<Tuple<String, String>> getIconsForTextWithCount(
-			final String text, final String... otherKeys) {
+	public Collection<Tuple<String, String>> getIconsForTextWithCount(final String text, final String... otherKeys) {
 		final Collection<Tuple<String, String>> icons = new ArrayList<Tuple<String, String>>();
 		if (ValidationUtils.isValid(text, otherKeys)) {
 			Matcher m;
@@ -123,8 +81,7 @@ public class IconServiceImpl implements IconService {
 					count++;
 				}
 				if (count > 0) {
-					final Tuple<String, String> t = new Tuple<String, String>(
-							iconPatternMap.get(i), "" + count);
+					final Tuple<String, String> t = new Tuple<String, String>(iconPatternMap.get(i), "" + count);
 					icons.add(t);
 				}
 				m.reset();
@@ -138,8 +95,7 @@ public class IconServiceImpl implements IconService {
 					count++;
 				}
 				if (count > 0) {
-					final Tuple<String, String> t = new Tuple<String, String>(
-							"fa fa-asterisk", "" + count);
+					final Tuple<String, String> t = new Tuple<String, String>("fa fa-asterisk", "" + count);
 					icons.add(t);
 				}
 				m2.reset();

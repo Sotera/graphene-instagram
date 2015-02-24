@@ -8,7 +8,7 @@ import graphene.web.pages.SimpleBasePage;
 import org.apache.tapestry5.annotations.Property;
 
 /**
- * Start page of application graphene-fincen-web.
+ * Start page of application graphene-instagram-web.
  */
 @PluginPage(visualType = G_VisualType.TOP, menuName = "Home", icon = "fa fa-lg fa-fw fa-home")
 public class Index extends SimpleBasePage {

@@ -3,13 +3,11 @@ package graphene.instagram.web.services;
 import graphene.augment.snlp.web.services.AugmentSNLPModule;
 import graphene.instagram.dao.InstagramDAOModule;
 import graphene.instagram.model.graphserver.GraphServerModule;
-import graphene.instagram.web.services.javascript.GlobeStack;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.rest.services.RestModule;
 import graphene.util.PropertiesFileSymbolProvider;
 import graphene.util.UtilModule;
 import graphene.web.security.NoSecurityModule;
-import graphene.web.security.ShiroSecurityModule;
 import graphene.web.services.GrapheneModule;
 import graphene.web.services.SearchBrokerService;
 
@@ -26,8 +24,6 @@ import org.apache.tapestry5.ioc.services.SymbolProvider;
 import org.apache.tapestry5.services.BeanBlockContribution;
 import org.apache.tapestry5.services.BeanBlockSource;
 import org.apache.tapestry5.services.DisplayBlockContribution;
-import org.apache.tapestry5.services.javascript.JavaScriptStack;
-import org.apache.tapestry5.services.javascript.JavaScriptStackSource;
 import org.slf4j.Logger;
 
 /**
@@ -38,11 +34,6 @@ import org.slf4j.Logger;
 @SubModule({ InstagramDAOModule.class, AppRestModule.class, NoSecurityModule.class, GraphServerModule.class,
 		GrapheneModule.class, RestModule.class, UtilModule.class, AugmentSNLPModule.class })
 public class AppModule {
-
-	@Contribute(JavaScriptStackSource.class)
-	public static void addGrapheneJSStacks(final MappedConfiguration<String, JavaScriptStack> configuration) {
-		configuration.addInstance("GlobeStack", GlobeStack.class);
-	}
 
 	public static void bind(final ServiceBinder binder) {
 		// binder.bind(MyServiceInterface.class, MyServiceImpl.class);

@@ -30,16 +30,10 @@ public class InstagramEntitySearch implements G_EntitySearch {
 	private final String auth;
 	ESRestAPIConnection c;
 
-	public InstagramEntitySearch(final ESRestAPIConnection c,
-			final String authEncoding) {
+	public InstagramEntitySearch(final ESRestAPIConnection c, final String authEncoding) {
 		auth = authEncoding;
 		this.c = c;
 	}
-
-	// public InstagramReportSearchIterator buildInstagramReportSearchIterator(
-	// final String baseURL, final EntityQuery query) {
-	// return new InstagramReportSearchIterator(c, auth, baseURL, query);
-	// }
 
 	/*
 	 * (non-Javadoc)
@@ -47,8 +41,7 @@ public class InstagramEntitySearch implements G_EntitySearch {
 	 * @see graphene.model.idl.G_EntitySearch#getDescriptors()
 	 */
 	@Override
-	public Map<String, List<G_PropertyDescriptor>> getDescriptors()
-			throws AvroRemoteException {
+	public Map<String, List<G_PropertyDescriptor>> getDescriptors() throws AvroRemoteException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -60,29 +53,12 @@ public class InstagramEntitySearch implements G_EntitySearch {
 	 * java.util.List, long, long, java.lang.String)
 	 */
 	@Override
-	public G_SearchResults search(final String query,
-			final List<G_PropertyMatchDescriptor> terms, final long start,
+	public G_SearchResults search(final String query, final List<G_PropertyMatchDescriptor> terms, final long start,
 			final long max, final String type) throws AvroRemoteException {
 
 		final EntityQuery sq = new EntityQuery();
 		sq.addAttribute(new G_SearchTuple(query, G_SearchType.COMPARE_EQUALS));
-		// final InstagramReportSearchIterator ssr =
-		// buildInstagramReportSearchIterator(
-		// c.getIndexName(), sq);
-		// if (start >= 0) {
-		// ssr.setStartIndex((int) start);
-		// }
-		// if (max > 0) {
-		// ssr.setMaxResults((int) max);
-		// }
-		// // ////////////////////////////
-		// final List<G_SearchResult> results = new ArrayList<G_SearchResult>();
-		//
-		// while (ssr.hasNext()) {
-		// final G_SearchResult r = ssr.next();
-		// results.add(r);
-		// }
-		// return new G_SearchResults((long) ssr.getTotalResults(), results);
+
 		return null;
 	}
 

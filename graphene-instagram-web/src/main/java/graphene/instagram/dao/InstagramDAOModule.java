@@ -10,8 +10,6 @@ import graphene.dao.EntityDAO;
 import graphene.dao.GroupDAO;
 import graphene.dao.IconService;
 import graphene.dao.LoggingDAO;
-import graphene.dao.PermissionDAO;
-import graphene.dao.RoleDAO;
 import graphene.dao.StyleService;
 import graphene.dao.TransactionDAO;
 import graphene.dao.UserDAO;
@@ -19,38 +17,28 @@ import graphene.dao.UserGroupDAO;
 import graphene.dao.UserWorkspaceDAO;
 import graphene.dao.WorkspaceDAO;
 import graphene.dao.annotations.EntityLightFunnelMarker;
+import graphene.dao.es.DefaultESUserSpaceModule;
 import graphene.dao.es.ESRestAPIConnection;
 import graphene.dao.es.ESRestAPIConnectionImpl;
 import graphene.dao.es.JestModule;
-import graphene.dao.es.LoggingDAODefaultESImpl;
-import graphene.instagram.dao.impl.InstagramDataAccess;
-import graphene.instagram.dao.impl.InstagramEntitySearch;
-import graphene.instagram.dao.impl.GraphTraversalRuleServiceImpl;
-import graphene.instagram.dao.impl.IconServiceImpl;
-import graphene.instagram.dao.impl.es.CombinedDAOESImpl;
-import graphene.instagram.dao.impl.es.DataSourceListDAOESImpl;
-import graphene.instagram.dao.impl.es.ESUrlConstants;
-import graphene.instagram.dao.impl.es.EntityDAOESImpl;
-import graphene.instagram.dao.impl.es.GroupDAOESImpl;
-import graphene.instagram.dao.impl.es.TransactionDAOESImpl;
-import graphene.instagram.dao.impl.es.UserDAOESImpl;
-import graphene.instagram.dao.impl.es.UserGroupDAOESImpl;
-import graphene.instagram.dao.impl.es.UserWorkspaceDAOESImpl;
-import graphene.instagram.dao.impl.es.WorkspaceDAOESImpl;
-import graphene.instagram.model.funnels.InstagramEntityLightFunnel;
+import graphene.dao.es.impl.CombinedDAOESImpl;
+import graphene.dao.es.impl.LoggingDAODefaultESImpl;
 import graphene.hts.entityextraction.Extractor;
 import graphene.hts.keywords.KeywordExtractorImpl;
 import graphene.hts.sentences.SentenceExtractorImpl;
+import graphene.instagram.dao.impl.GraphTraversalRuleServiceImpl;
+import graphene.instagram.dao.impl.IconServiceImpl;
+import graphene.instagram.dao.impl.InstagramDataAccess;
+import graphene.instagram.dao.impl.es.DataSourceListDAOESImpl;
+import graphene.instagram.dao.impl.es.EntityDAOESImpl;
+import graphene.instagram.dao.impl.es.TransactionDAOESImpl;
+import graphene.instagram.model.funnels.InstagramEntityLightFunnel;
 import graphene.model.funnels.Funnel;
 import graphene.model.idl.G_DataAccess;
-import graphene.model.idl.G_EntitySearch;
-import graphene.services.SimplePermissionDAOImpl;
-import graphene.services.SimpleRoleDAOImpl;
 import graphene.services.StopWordService;
 import graphene.services.StopWordServiceImpl;
 import graphene.services.StyleServiceImpl;
 import graphene.util.PropertiesFileSymbolProvider;
-import graphene.util.net.HttpUtil;
 
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.Invokable;
@@ -74,14 +62,12 @@ import org.slf4j.LoggerFactory;
  * @author djue
  * 
  */
-@SubModule({ JestModule.class, DAOModule.class, MITIEModule.class })
+@SubModule({ JestModule.class, DefaultESUserSpaceModule.class, DAOModule.class, MITIEModule.class })
 public class InstagramDAOModule {
 	private static Logger logger = LoggerFactory.getLogger(InstagramDAOModule.class);
 
 	public static void bind(final ServiceBinder binder) {
 		binder.bind(GraphTraversalRuleService.class, GraphTraversalRuleServiceImpl.class);
-		binder.bind(RoleDAO.class, SimpleRoleDAOImpl.class).eagerLoad();
-		binder.bind(PermissionDAO.class, SimplePermissionDAOImpl.class).eagerLoad();
 		binder.bind(EntityDAO.class, EntityDAOESImpl.class).eagerLoad();
 		binder.bind(G_DataAccess.class, InstagramDataAccess.class);
 
@@ -92,12 +78,6 @@ public class InstagramDAOModule {
 		// distributed configuration!)
 		binder.bind(DataSourceListDAO.class, DataSourceListDAOESImpl.class).eagerLoad();
 		binder.bind(StyleService.class, StyleServiceImpl.class);
-
-		binder.bind(GroupDAO.class, GroupDAOESImpl.class).eagerLoad();
-		binder.bind(WorkspaceDAO.class, WorkspaceDAOESImpl.class).eagerLoad();
-		binder.bind(UserDAO.class, UserDAOESImpl.class).eagerLoad();
-		binder.bind(UserGroupDAO.class, UserGroupDAOESImpl.class);
-		binder.bind(UserWorkspaceDAO.class, UserWorkspaceDAOESImpl.class);
 
 		binder.bind(CombinedDAO.class, CombinedDAOESImpl.class);
 		binder.bind(ESRestAPIConnection.class, ESRestAPIConnectionImpl.class).eagerLoad();
@@ -118,23 +98,6 @@ public class InstagramDAOModule {
 	@Contribute(StopWordService.class)
 	public static void contributeStopWords(final Configuration<String> stopwords) {
 		stopwords.add("Test");
-		stopwords.add("XX");
-		stopwords.add("XX/XX");
-		stopwords.add("XXX");
-		stopwords.add("Unknown");
-		stopwords.add("NULL NULL");
-		stopwords.add("Unavailable");
-		stopwords.add("lerequest@wellsfargo.com");
-		stopwords.add("backupdocs@bankofamerica.com");
-		stopwords.add("le.request@jpmchase.com");
-		stopwords.add("all locations");
-		stopwords.add("sarescalations@paypal.com");
-		stopwords.add("OTHER");
-		stopwords.add("NONE");
-		stopwords.add("NONE NONE NONE");
-
-		stopwords.add("supportingdocrequest@td.com");
-		stopwords.add("figbackupdocs@bankofamerica.com");
 	}
 
 	@Startup
@@ -207,31 +170,12 @@ public class InstagramDAOModule {
 		});
 	}
 
-	@Deprecated
-	public G_EntitySearch buildInstagramEntitySearch(@Inject final ESRestAPIConnection connection) {
-		final String authorizationEncoding = HttpUtil
-				.getAuthorizationEncoding("bsauser", "bs@U$er41ife1".toCharArray());
-		return new InstagramEntitySearch(connection, authorizationEncoding);
-	}
-
 	public PropertiesFileSymbolProvider buildTableNameSymbolProvider(final Logger logger) {
 		return new PropertiesFileSymbolProvider(logger, "tablenames.properties", true);
 	}
 
 	public void contributeApplicationDefaults(final MappedConfiguration<String, String> configuration) {
 		configuration.add(MITIEModule.ENABLED, "true");
-		// Elastic Search defaults (if no es.properties file is provided)
-		configuration.add(JestModule.ES_SERVER, ESUrlConstants.defaultHost);
-		configuration.add(JestModule.ES_SEARCH_INDEX, ESUrlConstants.defaultIndex1);
-
-		configuration.add(JestModule.ES_USER_INDEX, ESUrlConstants.defaultUserIndexName);
-		configuration.add(JestModule.ES_GROUP_INDEX, ESUrlConstants.defaultGroupIndexName);
-		configuration.add(JestModule.ES_WORKSPACE_INDEX, ESUrlConstants.defaultWorkspaceIndexName);
-		configuration.add(JestModule.ES_USERWORKSPACE_INDEX, ESUrlConstants.defaultUserWorkspaceIndexName);
-		configuration.add(JestModule.ES_USERGROUP_INDEX, ESUrlConstants.defaultUserGroupIndexName);
-		configuration.add(JestModule.ES_LOGGING_INDEX, ESUrlConstants.defaultLoggingIndexName);
-		configuration.add(JestModule.ES_PERSISTED_GRAPH_INDEX, ESUrlConstants.defaultPersistedGraphIndexName);
-		configuration.add(JestModule.ES_PERSISTED_GRAPH_TYPE, ESUrlConstants.defaultPersistedGraphType);
 		configuration.add(JestModule.ES_DEFAULT_TIMEOUT, "30s");
 
 	}

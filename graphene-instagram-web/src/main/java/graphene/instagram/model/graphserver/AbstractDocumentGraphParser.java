@@ -56,6 +56,17 @@ import org.slf4j.Logger;
  * 
  */
 public abstract class AbstractDocumentGraphParser<T> implements DocumentGraphParser<T> {
+	public static final String MEDIA_ID = "mediaid";
+	public static final String MEDIA_LABEL = "medialabel";
+	public static final String MEDIA_LINK = "medialink";
+	public static final String MEDIA_OWNER = "mediaowner";
+	public static final String MEDIA_CREATED_TIME = "mediacreatedtime";
+	public static final String MEDIA_CAPTION_TEXT = "mediacaptiontext";
+	public static final String MEDIA_LIKE_COUNT = "medialikecount";
+	public static final String MEDIA_COMMENT_COUNT = "mediacommentcount";
+	public static final String MEDIA_LOCATION_LATLON = "medialocationlatlon";
+	public static final String MEDIA_LOCATION_NAME = "medialocationname";
+	public static final String MEDIA_THUMBNAIL = "mediathumbnail";
 
 	/**
 	 * You require the query generated from this object to have a low priority

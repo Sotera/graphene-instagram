@@ -1,13 +1,10 @@
 package graphene.instagram.web.services;
 
 import graphene.rest.ws.CSGraphServerRS;
-import graphene.rest.ws.DataSourceServerRS;
 import graphene.rest.ws.EntityServerRS;
-import graphene.rest.ws.EventServerRS;
 import graphene.rest.ws.GraphmlServerRS;
 import graphene.rest.ws.UDSessionRS;
 import graphene.rest.ws.impl.CSGraphServerRSImpl;
-import graphene.rest.ws.impl.DataSourceServerRSImpl;
 import graphene.rest.ws.impl.EntityServerRSImpl;
 import graphene.rest.ws.impl.GraphmlServerRSImpl;
 import graphene.rest.ws.impl.UDSessionRSImpl;
@@ -29,15 +26,22 @@ import org.tynamo.resteasy.ResteasySymbols;
  * 
  */
 public class AppRestModule {
-	public static void bind(ServiceBinder binder) {
+	public static void bind(final ServiceBinder binder) {
 		binder.bind(EntityServerRS.class, EntityServerRSImpl.class);
 		binder.bind(GraphmlServerRS.class, GraphmlServerRSImpl.class);
-
-		binder.bind(UDSessionRS.class, UDSessionRSImpl.class); // MFM
-
-		binder.bind(DataSourceServerRS.class, DataSourceServerRSImpl.class);
+		binder.bind(UDSessionRS.class, UDSessionRSImpl.class);
 		binder.bind(CSGraphServerRS.class, CSGraphServerRSImpl.class);
 
+	}
+
+	@Contribute(javax.ws.rs.core.Application.class)
+	public static void contributeApplication(final Configuration<Object> singletons, final CSGraphServerRS restService) {
+		singletons.add(restService);
+	}
+
+	@Contribute(javax.ws.rs.core.Application.class)
+	public static void contributeApplication(final Configuration<Object> singletons, final EntityServerRS restService) {
+		singletons.add(restService);
 	}
 
 	/**
@@ -48,47 +52,19 @@ public class AppRestModule {
 	 */
 
 	@Contribute(javax.ws.rs.core.Application.class)
-	public static void contributeApplication(Configuration<Object> singletons,
-			GraphmlServerRS restService) {
-		singletons.add(restService);
-	}
-
-	@Contribute(javax.ws.rs.core.Application.class)
-	public static void contributeApplication(Configuration<Object> singletons,
-			CSGraphServerRS restService) {
-		singletons.add(restService);
-	}
-
-
-	@Contribute(javax.ws.rs.core.Application.class)
-	public static void contributeApplication(Configuration<Object> singletons,
-			EventServerRS restService) {
-		singletons.add(restService);
-	}
-
-	@Contribute(javax.ws.rs.core.Application.class)
-	public static void contributeApplication(Configuration<Object> singletons,
-			EntityServerRS restService) {
+	public static void contributeApplication(final Configuration<Object> singletons, final GraphmlServerRS restService) {
 		singletons.add(restService);
 	}
 
 	// MFM added 1/3/14
 	@Contribute(javax.ws.rs.core.Application.class)
-	public static void contributeApplication(Configuration<Object> singletons,
-			UDSessionRS restService) {
-		singletons.add(restService);
-	}
-
-	@Contribute(javax.ws.rs.core.Application.class)
-	public static void contributeApplication(Configuration<Object> singletons,
-			DataSourceServerRS restService) {
+	public static void contributeApplication(final Configuration<Object> singletons, final UDSessionRS restService) {
 		singletons.add(restService);
 	}
 
 	@Contribute(SymbolProvider.class)
 	@ApplicationDefaults
-	public static void provideSymbols(
-			MappedConfiguration<String, String> configuration) {
+	public static void provideSymbols(final MappedConfiguration<String, String> configuration) {
 		configuration.add(ResteasySymbols.MAPPING_PREFIX, "/rest");
 
 		// This disables the autoscanning of graphene.instagram.web.rest
@@ -105,8 +81,7 @@ public class AppRestModule {
 	 * @param configuration
 	 */
 	@Contribute(ResteasyPackageManager.class)
-	public static void resteasyPackageManager(
-			Configuration<String> configuration) {
+	public static void resteasyPackageManager(final Configuration<String> configuration) {
 		configuration.add("graphene.instagram.web.rest.autobuild");
 	}
 
