@@ -45,40 +45,12 @@
 			<artifactId>graphene-export</artifactId>
 		</dependency>
 		<dependency>
-			<artifactId>graphene-model</artifactId>
-			<groupId>${base.project.groupId}</groupId>
-		</dependency>
-		<dependency>
-			<groupId>${base.project.groupId}</groupId>
-			<artifactId>graphene-dao</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${base.project.groupId}</groupId>
-			<artifactId>graphene-dao-sql</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>${base.project.groupId}</groupId>
 			<artifactId>graphene-dao-es</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>${base.project.groupId}</groupId>
-			<artifactId>graphene-dao-titan</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${base.project.groupId}</groupId>
-			<artifactId>graphene-search</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${base.project.groupId}</groupId>
 			<artifactId>graphene-hts</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${base.project.groupId}</groupId>
-			<artifactId>graphene-util</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>${base.project.groupId}</groupId>
-			<artifactId>graphene-memorydb</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>graphene-augment</groupId>
