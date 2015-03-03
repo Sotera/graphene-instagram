@@ -5,7 +5,6 @@ import graphene.augment.snlp.services.SentimentAnalyzerImpl;
 import graphene.business.commons.exception.DataAccessException;
 import graphene.dao.CombinedDAO;
 import graphene.dao.DAOModule;
-import graphene.dao.DataSourceListDAO;
 import graphene.dao.EntityDAO;
 import graphene.dao.GroupDAO;
 import graphene.dao.IconService;
@@ -29,7 +28,6 @@ import graphene.hts.sentences.SentenceExtractorImpl;
 import graphene.instagram.dao.impl.GraphTraversalRuleServiceImpl;
 import graphene.instagram.dao.impl.IconServiceImpl;
 import graphene.instagram.dao.impl.InstagramDataAccess;
-import graphene.instagram.dao.impl.es.DataSourceListDAOESImpl;
 import graphene.instagram.dao.impl.es.EntityDAOESImpl;
 import graphene.instagram.dao.impl.es.TransactionDAOESImpl;
 import graphene.instagram.model.funnels.InstagramEntityLightFunnel;
@@ -38,7 +36,6 @@ import graphene.model.idl.G_DataAccess;
 import graphene.services.StopWordService;
 import graphene.services.StopWordServiceImpl;
 import graphene.services.StyleServiceImpl;
-import graphene.util.PropertiesFileSymbolProvider;
 
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.Invokable;
@@ -74,9 +71,6 @@ public class InstagramDAOModule {
 		// Graphene-web needs this for the coercion model
 		binder.bind(TransactionDAO.class, TransactionDAOESImpl.class).withId("Primary");
 
-		// TODO: Make this into a service in the core we can contribute to (for
-		// distributed configuration!)
-		binder.bind(DataSourceListDAO.class, DataSourceListDAOESImpl.class).eagerLoad();
 		binder.bind(StyleService.class, StyleServiceImpl.class);
 
 		binder.bind(CombinedDAO.class, CombinedDAOESImpl.class);
@@ -168,10 +162,6 @@ public class InstagramDAOModule {
 				return uwDAO;
 			}
 		});
-	}
-
-	public PropertiesFileSymbolProvider buildTableNameSymbolProvider(final Logger logger) {
-		return new PropertiesFileSymbolProvider(logger, "tablenames.properties", true);
 	}
 
 	public void contributeApplicationDefaults(final MappedConfiguration<String, String> configuration) {
