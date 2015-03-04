@@ -1,12 +1,8 @@
 package graphene.instagram.web.services;
 
 import graphene.rest.ws.CSGraphServerRS;
-import graphene.rest.ws.EntityServerRS;
-import graphene.rest.ws.GraphmlServerRS;
 import graphene.rest.ws.UDSessionRS;
 import graphene.rest.ws.impl.CSGraphServerRSImpl;
-import graphene.rest.ws.impl.EntityServerRSImpl;
-import graphene.rest.ws.impl.GraphmlServerRSImpl;
 import graphene.rest.ws.impl.UDSessionRSImpl;
 
 import org.apache.tapestry5.ioc.Configuration;
@@ -27,8 +23,6 @@ import org.tynamo.resteasy.ResteasySymbols;
  */
 public class AppRestModule {
 	public static void bind(final ServiceBinder binder) {
-		binder.bind(EntityServerRS.class, EntityServerRSImpl.class);
-		binder.bind(GraphmlServerRS.class, GraphmlServerRSImpl.class);
 		binder.bind(UDSessionRS.class, UDSessionRSImpl.class);
 		binder.bind(CSGraphServerRS.class, CSGraphServerRSImpl.class);
 
@@ -39,22 +33,12 @@ public class AppRestModule {
 		singletons.add(restService);
 	}
 
-	@Contribute(javax.ws.rs.core.Application.class)
-	public static void contributeApplication(final Configuration<Object> singletons, final EntityServerRS restService) {
-		singletons.add(restService);
-	}
-
 	/**
 	 * Contributions to the RESTeasy main Application, insert all your RESTeasy
 	 * singleton services here.
 	 * <p/>
 	 * 
 	 */
-
-	@Contribute(javax.ws.rs.core.Application.class)
-	public static void contributeApplication(final Configuration<Object> singletons, final GraphmlServerRS restService) {
-		singletons.add(restService);
-	}
 
 	// MFM added 1/3/14
 	@Contribute(javax.ws.rs.core.Application.class)
