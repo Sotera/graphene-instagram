@@ -5,17 +5,14 @@ import graphene.augment.snlp.services.SentimentAnalyzerImpl;
 import graphene.business.commons.exception.DataAccessException;
 import graphene.dao.CombinedDAO;
 import graphene.dao.DAOModule;
-import graphene.dao.EntityDAO;
 import graphene.dao.GroupDAO;
 import graphene.dao.IconService;
 import graphene.dao.LoggingDAO;
 import graphene.dao.StyleService;
-import graphene.dao.TransactionDAO;
 import graphene.dao.UserDAO;
 import graphene.dao.UserGroupDAO;
 import graphene.dao.UserWorkspaceDAO;
 import graphene.dao.WorkspaceDAO;
-import graphene.dao.annotations.EntityLightFunnelMarker;
 import graphene.dao.es.DefaultESUserSpaceModule;
 import graphene.dao.es.ESRestAPIConnection;
 import graphene.dao.es.ESRestAPIConnectionImpl;
@@ -28,10 +25,6 @@ import graphene.hts.sentences.SentenceExtractorImpl;
 import graphene.instagram.dao.impl.GraphTraversalRuleServiceImpl;
 import graphene.instagram.dao.impl.IconServiceImpl;
 import graphene.instagram.dao.impl.InstagramDataAccess;
-import graphene.instagram.dao.impl.es.EntityDAOESImpl;
-import graphene.instagram.dao.impl.es.TransactionDAOESImpl;
-import graphene.instagram.model.funnels.InstagramEntityLightFunnel;
-import graphene.model.funnels.Funnel;
 import graphene.model.idl.G_DataAccess;
 import graphene.services.StopWordService;
 import graphene.services.StopWordServiceImpl;
@@ -65,12 +58,8 @@ public class InstagramDAOModule {
 
 	public static void bind(final ServiceBinder binder) {
 		binder.bind(GraphTraversalRuleService.class, GraphTraversalRuleServiceImpl.class);
-		binder.bind(EntityDAO.class, EntityDAOESImpl.class).eagerLoad();
+
 		binder.bind(G_DataAccess.class, InstagramDataAccess.class);
-
-		// Graphene-web needs this for the coercion model
-		binder.bind(TransactionDAO.class, TransactionDAOESImpl.class).withId("Primary");
-
 		binder.bind(StyleService.class, StyleServiceImpl.class);
 
 		binder.bind(CombinedDAO.class, CombinedDAOESImpl.class);
@@ -78,7 +67,6 @@ public class InstagramDAOModule {
 
 		binder.bind(Extractor.class, KeywordExtractorImpl.class).withId("keyword");
 		binder.bind(Extractor.class, SentenceExtractorImpl.class).withId("sentence");
-		binder.bind(Funnel.class, InstagramEntityLightFunnel.class).withMarker(EntityLightFunnelMarker.class);
 
 		binder.bind(MitieDAO.class, MitieDAOImpl.class);
 		binder.bind(IconService.class, IconServiceImpl.class);

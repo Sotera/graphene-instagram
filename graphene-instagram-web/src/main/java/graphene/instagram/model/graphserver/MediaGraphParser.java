@@ -6,10 +6,16 @@ import graphene.instagram.model.media.LikeData;
 import graphene.instagram.model.media.Media;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_CanonicalRelationshipType;
-import graphene.model.query.EntityQuery;
+import graphene.model.idl.G_EntityQuery;
+import graphene.model.idl.G_Property;
+import graphene.model.idl.G_PropertyType;
+import graphene.model.idl.G_SearchResult;
+import graphene.model.idl.G_SingletonRange;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import mil.darpa.vande.generic.V_GenericNode;
@@ -45,11 +51,11 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 	// This method creates a sub graph of the nodes inside a report, and a list
 	// of new identifiers to search on.
 	@Override
-	public boolean parse(final Object obj, final EntityQuery q) {
-		if (!(obj instanceof Media)) {
+	public boolean parse(final G_SearchResult sr, final G_EntityQuery q) {
+		if (!(sr.getResult() instanceof Media)) {
 			return false;
 		}
-		Media p = (Media) obj;
+		final Media p = (Media) sr.getResult();
 
 		// Make nodes dealing with the report itself.
 		if (ValidationUtils.isValid(p)) {
@@ -60,8 +66,8 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 			if (phgb.isPreviouslyScannedResult(reportId)) {
 				return false;
 			}
-			p = populateExtraFields(p, q);
-			final double inheritedScore = (double) p.getAdditionalProperties().get(DocumentGraphParser.SCORE);
+			populateSearchResult(sr, q);
+			p.getAdditionalProperties().get(DocumentGraphParser.SCORE);
 
 			phgb.addScannedResult(reportId);
 			// report node does not attach to anything.
@@ -137,40 +143,119 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 	}
 
 	@Override
-	public Media populateExtraFields(final Media p, final EntityQuery sq) {
+	public Collection<? extends G_Property> populateSearchResult(final G_SearchResult sr, final G_EntityQuery sq) {
+		final List<G_Property> list = new ArrayList<G_Property>();
+		final Media p = (Media) sr.getResult();
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText(MEDIA_LABEL)
+				.setKey(MEDIA_LABEL)
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(getReportLabel(p)).setType(G_PropertyType.STRING)
+								.build()).build());
+		list.add(G_Property.newBuilder().setFriendlyText(MEDIA_ID).setKey(MEDIA_ID)
+				.setRange(G_SingletonRange.newBuilder().setValue(p.getId()).setType(G_PropertyType.STRING).build())
+				.build());
 
-		p.setAdditionalProperty(MEDIA_LABEL, getReportLabel(p));
-		p.setAdditionalProperty(MEDIA_ID, p.getId());
-		p.setAdditionalProperty(MEDIA_LINK, p.getLink());
-		p.setAdditionalProperty(MEDIA_OWNER, p.getUsername());
-		p.setAdditionalProperty(MEDIA_CREATED_TIME, p.getCreatedTime());
-		p.setAdditionalProperty(MEDIA_CAPTION_TEXT, p.getCaptionText());
-		p.setAdditionalProperty(MEDIA_LIKE_COUNT, p.getLikes().getCount());
-		p.setAdditionalProperty(MEDIA_COMMENT_COUNT, p.getComments().getCount());
-		p.setAdditionalProperty(MEDIA_THUMBNAIL, p.getThumbnail());
+		list.add(G_Property.newBuilder().setFriendlyText(MEDIA_LINK).setKey(MEDIA_LINK)
+				.setRange(G_SingletonRange.newBuilder().setValue(p.getLink()).setType(G_PropertyType.STRING).build())
+				.build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText(MEDIA_OWNER)
+				.setKey(MEDIA_OWNER)
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getUsername()).setType(G_PropertyType.STRING).build())
+				.build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText(MEDIA_CREATED_TIME)
+				.setKey(MEDIA_CREATED_TIME)
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getCreatedTime()).setType(G_PropertyType.DATE).build())
+				.build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText(MEDIA_CAPTION_TEXT)
+				.setKey(MEDIA_CAPTION_TEXT)
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getCaptionText()).setType(G_PropertyType.STRING)
+								.build()).build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText(MEDIA_LIKE_COUNT)
+				.setKey(MEDIA_LIKE_COUNT)
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getLikes().getCount()).setType(G_PropertyType.LONG)
+								.build()).build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText(MEDIA_COMMENT_COUNT)
+				.setKey(MEDIA_COMMENT_COUNT)
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getComments().getCount()).setType(G_PropertyType.LONG)
+								.build()).build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText(MEDIA_THUMBNAIL)
+				.setKey(MEDIA_THUMBNAIL)
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getThumbnail()).setType(G_PropertyType.STRING).build())
+				.build());
 
 		if ((p.getLocation().getLatitude() != null) && (p.getLocation().getLongitude() != null)) {
-			p.setAdditionalProperty(MEDIA_LOCATION_LATLON, p.getLocation().getLatitude() + ", "
-					+ p.getLocation().getLongitude());
-		}
+			list.add(G_Property
+					.newBuilder()
+					.setFriendlyText(MEDIA_LOCATION_LATLON)
+					.setKey(MEDIA_LOCATION_LATLON)
+					.setRange(
+							G_SingletonRange.newBuilder()
+									.setValue(p.getLocation().getLatitude() + ", " + p.getLocation().getLongitude())
+									.setType(G_PropertyType.GEO).build()).build());
 
-		if (ValidationUtils.isValid(p.getLocation().getLatitude())
-				&& ValidationUtils.isValid(p.getLocation().getLongitude())) {
-			p.setAdditionalProperty(MEDIA_LOCATION_LATLON, p.getLocation().getLatitude() + ", "
-					+ p.getLocation().getLongitude());
 		}
 
 		if (ValidationUtils.isValid(p.getLocation().getName())) {
-			p.setAdditionalProperty(MEDIA_LOCATION_NAME, p.getLocation().getName());
+			list.add(G_Property
+					.newBuilder()
+					.setFriendlyText(MEDIA_LOCATION_NAME)
+					.setKey(MEDIA_LOCATION_NAME)
+					.setRange(
+							G_SingletonRange.newBuilder().setValue(p.getLocation().getName())
+									.setType(G_PropertyType.STRING).build()).build());
 		}
 
 		// FIXME: using literal strings instead of strings defined in
 		// AbstractDocumentParser
-		p.setAdditionalProperty("ATS_IN_CAPTION", p.getAtsInCaption());
-		p.setAdditionalProperty("ATS_IN_COMMENTS", p.getAtsInComments());
-		p.setAdditionalProperty("HASHTAGS_IN_CAPTION", p.getHashTagsInCaption());
-		p.setAdditionalProperty("HASHTAGS_IN_COMMENTS", p.getHashTagsInComments());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText("ATS_IN_CAPTION")
+				.setKey("ATS_IN_CAPTION")
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getAtsInCaption()).setType(G_PropertyType.OTHER)
+								.build()).build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText("ATS_IN_COMMENTS")
+				.setKey("ATS_IN_COMMENTS")
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getAtsInComments()).setType(G_PropertyType.OTHER)
+								.build()).build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText("HASHTAGS_IN_CAPTION")
+				.setKey("HASHTAGS_IN_CAPTION")
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getHashTagsInCaption()).setType(G_PropertyType.OTHER)
+								.build()).build());
+		list.add(G_Property
+				.newBuilder()
+				.setFriendlyText("HASHTAGS_IN_COMMENTS")
+				.setKey("HASHTAGS_IN_COMMENTS")
+				.setRange(
+						G_SingletonRange.newBuilder().setValue(p.getHashTagsInComments()).setType(G_PropertyType.OTHER)
+								.build()).build());
 
-		return p;
+		return list;
 	}
 }

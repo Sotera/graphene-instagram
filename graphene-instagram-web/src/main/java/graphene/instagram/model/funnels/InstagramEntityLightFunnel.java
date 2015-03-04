@@ -15,6 +15,7 @@ import java.util.List;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.slf4j.Logger;
 
+@Deprecated
 public class InstagramEntityLightFunnel implements Funnel<EntityLight, G_Entity> {
 
 	@Inject
@@ -36,8 +37,7 @@ public class InstagramEntityLightFunnel implements Funnel<EntityLight, G_Entity>
 				el.setDatasource_id(e.getProvenance().getUri());
 			}
 			final StringBuffer sb = new StringBuffer("");
-			final List<G_Property> propertiesByTag = EntityHelper
-					.getPropertiesByTag(e, G_PropertyTag.NAME);
+			final List<G_Property> propertiesByTag = EntityHelper.getPropertiesByTag(e, G_PropertyTag.NAME);
 			for (final G_Property p : propertiesByTag) {
 				if (sb.length() > 0) {
 					sb.append(", ");
@@ -48,50 +48,36 @@ public class InstagramEntityLightFunnel implements Funnel<EntityLight, G_Entity>
 				sb.append(n);
 			}
 			if (ValidationUtils.isValid(e.getProvenance())) {
-				el.setEffectiveName(e.getProvenance().getUri() + " "
-						+ e.getUid() + ": " + sb.toString());
+				el.setEffectiveName(e.getProvenance().getUri() + " " + e.getUid() + ": " + sb.toString());
 			}
 			if (propertiesByTag.size() > 1) {
-				el.setEffectiveName(el.getEffectiveName() + " ("
-						+ propertiesByTag.size() + " associated values)");
+				el.setEffectiveName(el.getEffectiveName() + " (" + propertiesByTag.size() + " associated values)");
 			}
 			el.setAllNames(sb.toString());
-			for (final G_Property p : EntityHelper.getPropertiesByKey(e,
-					"phone")) {
+			for (final G_Property p : EntityHelper.getPropertiesByKey(e, "phone")) {
 				el.getAttributes().add(
-						new EntityAttribute("Phone", p.getKey(),
+						new EntityAttribute("Phone", p.getKey(), (String) PropertyHelper.from(p).getValue()));
+			}
+			for (final G_Property p : EntityHelper.getPropertiesByTag(e, G_PropertyTag.GEO)) {
+				el.getAttributes().add(
+						new EntityAttribute("Address", p.getKey(), (String) PropertyHelper.from(p).getValue()));
+			}
+			for (final G_Property p : EntityHelper.getPropertiesByKey(e, "email")) {
+				el.getAttributes().add(
+						new EntityAttribute("Email", p.getKey(), (String) PropertyHelper.from(p).getValue()));
+			}
+			for (final G_Property p : EntityHelper.getPropertiesByTag(e, G_PropertyTag.ID)) {
+				el.getAttributes().add(
+						new EntityAttribute("Identifier", (String) PropertyHelper.from(p).getValue(),
 								(String) PropertyHelper.from(p).getValue()));
 			}
-			for (final G_Property p : EntityHelper.getPropertiesByTag(e,
-					G_PropertyTag.GEO)) {
+			for (final G_Property p : EntityHelper.getPropertiesByTag(e, G_PropertyTag.TEXT)) {
 				el.getAttributes().add(
-						new EntityAttribute("Address", p.getKey(),
+						new EntityAttribute("Narrative", (String) PropertyHelper.from(p).getValue(),
 								(String) PropertyHelper.from(p).getValue()));
 			}
-			for (final G_Property p : EntityHelper.getPropertiesByKey(e,
-					"email")) {
-				el.getAttributes().add(
-						new EntityAttribute("Email", p.getKey(),
-								(String) PropertyHelper.from(p).getValue()));
-			}
-			for (final G_Property p : EntityHelper.getPropertiesByTag(e,
-					G_PropertyTag.ID)) {
-				el.getAttributes().add(
-						new EntityAttribute("Identifier",
-								(String) PropertyHelper.from(p).getValue(),
-								(String) PropertyHelper.from(p).getValue()));
-			}
-			for (final G_Property p : EntityHelper.getPropertiesByTag(e,
-					G_PropertyTag.TEXT)) {
-				el.getAttributes().add(
-						new EntityAttribute("Narrative",
-								(String) PropertyHelper.from(p).getValue(),
-								(String) PropertyHelper.from(p).getValue()));
-			}
-			for (final G_Property ac : EntityHelper.getPropertiesByKey(e,
-					"account")) {
-				el.getAccountList().add(
-						(String) PropertyHelper.from(ac).getValue());
+			for (final G_Property ac : EntityHelper.getPropertiesByKey(e, "account")) {
+				el.getAccountList().add((String) PropertyHelper.from(ac).getValue());
 			}
 
 		} else {

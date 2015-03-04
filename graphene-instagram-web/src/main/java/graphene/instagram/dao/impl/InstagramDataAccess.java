@@ -33,43 +33,51 @@ public class InstagramDataAccess implements G_DataAccess {
 	private Logger logger;
 
 	@Inject
-	public InstagramDataAccess(G_EntitySearch s) {
+	public InstagramDataAccess(final G_EntitySearch s) {
 		_search = s;
 	}
 
 	@Override
-	public List<G_Entity> getEntities(List<String> entities,
-			G_LevelOfDetail levelOfDetail) throws AvroRemoteException {
+	public Map<String, List<G_Entity>> getAccounts(final List<String> entities) throws AvroRemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-		List<G_Entity> results = new ArrayList<G_Entity>();
+	@Override
+	public G_TransactionResults getAllTransactions(final List<String> entities, final G_LinkTag tag,
+			final G_DateRange date, final G_SortBy sort, final List<String> linkFilter, final long start, final long max)
+			throws AvroRemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-		List<G_PropertyMatchDescriptor> idList = new ArrayList<G_PropertyMatchDescriptor>();
+	@Override
+	public List<G_Entity> getEntities(final List<String> entities, final G_LevelOfDetail levelOfDetail)
+			throws AvroRemoteException {
 
-		int maxFetch = 100;
+		final List<G_Entity> results = new ArrayList<G_Entity>();
+
+		final List<G_PropertyMatchDescriptor> idList = new ArrayList<G_PropertyMatchDescriptor>();
+
+		final int maxFetch = 100;
 		int qCount = 0; // How many entities to query at once
-		Iterator<String> idIter = entities.iterator();
+		final Iterator<String> idIter = entities.iterator();
 		while (idIter.hasNext()) {
-			String entity = idIter.next();
+			final String entity = idIter.next();
 
-			G_PropertyMatchDescriptor idMatch = G_PropertyMatchDescriptor
-					.newBuilder()
-					.setKey("uid")
-					.setRange(
-							new SingletonRangeHelper(entity,
-									G_PropertyType.STRING))
+			final G_PropertyMatchDescriptor idMatch = G_PropertyMatchDescriptor.newBuilder().setKey("uid")
+					.setRange(new SingletonRangeHelper(entity, G_PropertyType.STRING))
 					.setConstraint(G_Constraint.REQUIRED_EQUALS).build();
 			idList.add(idMatch);
 			qCount++;
 
-			if (qCount == (maxFetch - 1) || !idIter.hasNext()) {
-				G_SearchResults searchResult = _search.search(null, idList, 0,
-						100, null);
+			if ((qCount == (maxFetch - 1)) || !idIter.hasNext()) {
+				final G_SearchResults searchResult = _search.search(idList, 0, 100);
 				if (searchResult != null) {
-					logger.debug("Searched for " + qCount + " ids, found "
-							+ searchResult.getTotal());
+					logger.debug("Searched for " + qCount + " ids, found " + searchResult.getTotal());
 
-					for (G_SearchResult r : searchResult.getResults()) {
-						G_Entity fle = (G_Entity) r.getResult();
+					for (final G_SearchResult r : searchResult.getResults()) {
+						final G_Entity fle = (G_Entity) r.getResult();
 						results.add(fle);
 					}
 				} else {
@@ -85,34 +93,16 @@ public class InstagramDataAccess implements G_DataAccess {
 	}
 
 	@Override
-	public Map<String, List<G_Entity>> getAccounts(List<String> entities)
-			throws AvroRemoteException {
+	public Map<String, List<G_Link>> getFlowAggregation(final List<String> entities, final List<String> focusEntities,
+			final G_DirectionFilter direction, final G_LinkEntityTypeFilter entityType, final G_LinkTag tag,
+			final G_DateRange date) throws AvroRemoteException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public Map<String, List<G_Link>> getFlowAggregation(List<String> entities,
-			List<String> focusEntities, G_DirectionFilter direction,
-			G_LinkEntityTypeFilter entityType, G_LinkTag tag, G_DateRange date)
-			throws AvroRemoteException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Map<String, List<G_Link>> getTimeSeriesAggregation(
-			List<String> entities, List<String> focusEntities, G_LinkTag tag,
-			G_DateRange date) throws AvroRemoteException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public G_TransactionResults getAllTransactions(List<String> entities,
-			G_LinkTag tag, G_DateRange date, G_SortBy sort,
-			List<String> linkFilter, long start, long max)
-			throws AvroRemoteException {
+	public Map<String, List<G_Link>> getTimeSeriesAggregation(final List<String> entities,
+			final List<String> focusEntities, final G_LinkTag tag, final G_DateRange date) throws AvroRemoteException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -7,9 +7,10 @@ import graphene.dao.GenericDAO;
 import graphene.instagram.dao.GraphTraversalRuleService;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_CanonicalRelationshipType;
+import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_IdType;
+import graphene.model.idl.G_SearchResult;
 import graphene.model.idl.G_SearchTuple;
-import graphene.model.query.EntityQuery;
 import graphene.services.PropertyHyperGraphBuilder;
 import graphene.util.DataFormatConstants;
 import graphene.util.StringUtils;
@@ -93,8 +94,8 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 		for (final V_GenericNode n : nodes) {
 			if (determineTraversability(n)) {
 
-				for (final EntityQuery eq : createQueriesFromNode(n)) {
-					final String queryToString = eq.getAttributeList().get(0).getValue();
+				for (final G_EntityQuery eq : createQueriesFromNode(n)) {
+					final String queryToString = (String) eq.getAttributeList().get(0).getValue();
 					// Have we done this EXACT query before?
 					if (!scannedQueries.contains(queryToString)) {
 
@@ -142,7 +143,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	}
 
 	@Override
-	public boolean callBack(final Object p) {
+	public boolean callBack(final G_SearchResult p) {
 
 		if (ValidationUtils.isValid(p)) {
 			final DocumentGraphParser parser = getParserForObject(p);
@@ -158,7 +159,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	}
 
 	@Override
-	public boolean callBack(final Object p, final EntityQuery q) {
+	public boolean callBack(final G_SearchResult p, final G_EntityQuery q) {
 		if (ValidationUtils.isValid(p)) {
 			final DocumentGraphParser parser = getParserForObject(p);
 			if (parser != null) {
@@ -172,62 +173,107 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 		}
 	}
 
+	@Override
+	public V_GenericNode createOrUpdateNode(final double minimumScoreRequired, final double inheritedScore,
+			final double localPriority, final String originalId, final String idType, final String nodeType,
+			final V_GenericNode attachTo, final String relationType, final String relationValue,
+			final double nodeCertainty) {
+		V_GenericNode a = null;
+
+		if (ValidationUtils.isValid(originalId)) {
+			if (!stopwordService.isValid(originalId)) {
+				addError(new DocumentError("Bad Identifier", "The " + nodeType + " (" + originalId
+						+ ") contains a stopword", Severity.WARN));
+			} else {
+				final String id = generateNodeId(originalId);
+				a = nodeList.getNode(id);
+				final double calculatedPriority = inheritedScore * localPriority;
+				if (a == null) {
+					a = new V_GenericNode(id);
+					a.setIdType(idType);
+					// This is important because we use it to search on the next
+					// traversal.
+					a.setIdVal(originalId);
+					a.setNodeType(nodeType);
+					a.setColor(style.getHexColorForNode(a.getNodeType()));
+					a.setMinScore(minimumScoreRequired);
+					a.setPriority(calculatedPriority);
+					// Remove leading zeros from the label
+					a.setLabel(StringUtils.removeLeadingZeros(originalId));
+					// XXX: need a way of getting the link to the page with TYPE
+					a.addData(nodeType, getCombinedSearchLink(nodeType, originalId));
+					nodeList.addNode(a);
+					legendItems.add(new V_LegendItem(a.getColor(), a.getNodeType()));
+				}
+				// now we have a valid node. Attach it to the other node
+				// provided.
+				if (ValidationUtils.isValid(attachTo)) {
+					final String key = generateEdgeId(attachTo.getId(), relationType, a.getId());
+					if ((key != null) && !edgeMap.containsKey(key)) {
+						final V_GenericEdge edge = new V_GenericEdge(a, attachTo);
+						edge.setIdType(relationType);
+						edge.setLabel(null);
+						edge.setIdVal(relationType);
+						if (nodeCertainty < 100.0) {
+							edge.addData("Certainty", DataFormatConstants.formatPercent(nodeCertainty));
+							edge.setLineStyle("dotted");
+							// edge.setColor("#787878");
+						}
+						// if this is a LIKE edge
+						if (relationType.equals(G_CanonicalRelationshipType.LIKES.name())) {
+							edge.setColor("blue");
+							edge.setLabel("+1");
+
+							// if this is an OWNER_OF edge that is connected to
+							// a "MEDIA" node...
+						} else if (relationType.equals(G_CanonicalRelationshipType.OWNER_OF.name())
+								&& (attachTo.getIdType().equals(G_CanonicalPropertyType.MEDIA.name()) || a.getIdType()
+										.equals(G_CanonicalPropertyType.MEDIA.name()))) {
+							edge.setColor("green");
+							edge.setCount(3);
+						}
+						edge.addData("Local_Priority", "" + localPriority);
+						edge.addData("Min_Score_Required", "" + minimumScoreRequired);
+						edge.addData("Parent_Score", "" + inheritedScore);
+						edge.addData("Value",
+								StringUtils.coalesc(" ", a.getLabel(), relationValue, attachTo.getLabel()));
+						edgeMap.put(key, edge);
+					}
+
+					// if this flag is set, we'll add the attributes to the
+					// attached node.
+					if (/* INHERIT_ATTRIBUTES */true) {
+						attachTo.inheritPropertiesOfExcept(a, skipInheritanceTypes);
+					}
+				}
+			}
+		} else {
+			logger.error("Invalid id for " + nodeType + " of node " + attachTo);
+		}
+		return a;
+	}
+
 	/**
 	 * Creates one or more queries based on data within a specific node.
 	 * 
 	 * @param n
 	 * @return
 	 */
-	private List<EntityQuery> createQueriesFromNode(final V_GenericNode n) {
-		final List<EntityQuery> list = new ArrayList<EntityQuery>(2);
-		final EntityQuery eq = new EntityQuery();
+	private List<G_EntityQuery> createQueriesFromNode(final V_GenericNode n) {
+		final List<G_EntityQuery> list = new ArrayList<G_EntityQuery>(2);
+
 		final G_SearchTuple<String> tuple = new G_SearchTuple<>();
 		tuple.setValue(n.getIdVal());
 		tuple.setSearchType(ruleService.getRule(n.getIdType()));
 		final G_IdType type = new G_IdType();
 		type.setName(n.getNodeType());
 		tuple.setNodeType(type);
-		eq.addAttribute(tuple);
-		eq.setMaxResult(MAX_RESULTS);
-		eq.setMinimumScore(n.getMinScore());
-		eq.setInitiatorId(n.getId());
+		final List<G_SearchTuple> tuples = new ArrayList<G_SearchTuple>();
+		tuples.add(tuple);
+		final G_EntityQuery eq = G_EntityQuery.newBuilder().setAttributeList(tuples).setMaxResult(MAX_RESULTS)
+				.setMinimumScore(n.getMinScore()).setInitiatorId(n.getId()).build();
 		list.add(eq);
-		// make second query here, stripping leading zeroes.
-		if (n.getIdVal().startsWith("0")) {
-			final EntityQuery eq2 = new EntityQuery();
-			final G_SearchTuple<String> tuple2 = new G_SearchTuple<>();
-			tuple2.setValue(StringUtils.removeLeadingZeros(n.getIdVal()));
-			tuple2.setSearchType(ruleService.getRule(n.getIdType()));
-			final G_IdType type2 = new G_IdType();
-			type2.setName(n.getNodeType());
-			tuple2.setNodeType(type2);
-			eq2.addAttribute(tuple2);
-			eq2.setMaxResult(MAX_RESULTS);
-			eq2.setMinimumScore(n.getMinScore());
-			eq2.setInitiatorId(n.getId());
-			list.add(eq2);
-		}
-		// make a second query here, stripping leading ones for phone types.
-		if (n.getIdType().equals(G_CanonicalPropertyType.PHONE.name())) {
-			final EntityQuery eq2 = new EntityQuery();
-			final G_SearchTuple<String> tuple2 = new G_SearchTuple<>();
-			if (n.getIdVal().startsWith("1")) {
-				// try without 1 code
-				tuple2.setValue(n.getIdVal().replaceFirst("1", ""));
-			} else {
-				// try with 1 code
-				tuple2.setValue("1" + n.getIdVal());
-			}
-			tuple2.setSearchType(ruleService.getRule(n.getIdType()));
-			final G_IdType type2 = new G_IdType();
-			type2.setName(n.getNodeType());
-			tuple2.setNodeType(type2);
-			eq2.addAttribute(tuple2);
-			eq2.setMaxResult(MAX_RESULTS);
-			eq2.setMinimumScore(n.getMinScore());
-			eq2.setInitiatorId(n.getId());
-			list.add(eq2);
-		}
+
 		return list;
 	}
 
@@ -247,7 +293,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	}
 
 	@Override
-	public GenericDAO<Object, EntityQuery> getDAO() {
+	public GenericDAO getDAO() {
 		return combinedDAO;
 	}
 
@@ -382,81 +428,6 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 
 	}
 
-	@Override
-	public V_GenericNode createOrUpdateNode(final double minimumScoreRequired, final double inheritedScore,
-			final double localPriority, final String originalId, final String idType, final String nodeType,
-			final V_GenericNode attachTo, final String relationType, final String relationValue,
-			final double nodeCertainty) {
-		V_GenericNode a = null;
-
-		if (ValidationUtils.isValid(originalId)) {
-			if (!stopwordService.isValid(originalId)) {
-				addError(new DocumentError("Bad Identifier", "The " + nodeType + " (" + originalId + ") contains a stopword", Severity.WARN));
-			} else {
-				final String id = generateNodeId(originalId);
-				a = nodeList.getNode(id);
-				final double calculatedPriority = inheritedScore * localPriority;
-				if (a == null) {
-					a = new V_GenericNode(id);
-					a.setIdType(idType);
-					// This is important because we use it to search on the next traversal.
-					a.setIdVal(originalId);
-					a.setNodeType(nodeType);
-					a.setColor(style.getHexColorForNode(a.getNodeType()));
-					a.setMinScore(minimumScoreRequired);
-					a.setPriority(calculatedPriority);
-					// Remove leading zeros from the label
-					a.setLabel(StringUtils.removeLeadingZeros(originalId));
-					// XXX: need a way of getting the link to the page with TYPE
-					a.addData(nodeType, getCombinedSearchLink(nodeType, originalId));
-					nodeList.addNode(a);
-					legendItems.add(new V_LegendItem(a.getColor(), a.getNodeType()));
-				}
-				// now we have a valid node. Attach it to the other node
-				// provided.
-				if (ValidationUtils.isValid(attachTo)) {
-					final String key = generateEdgeId(attachTo.getId(), relationType, a.getId());
-					if ((key != null) && !edgeMap.containsKey(key)) {
-						final V_GenericEdge edge = new V_GenericEdge(a, attachTo);
-						edge.setIdType(relationType);
-						edge.setLabel(null);
-						edge.setIdVal(relationType);
-						if (nodeCertainty < 100.0) {
-							edge.addData("Certainty", DataFormatConstants.formatPercent(nodeCertainty));
-							edge.setLineStyle("dotted");
-							// edge.setColor("#787878");
-						}
-						// if this is a LIKE edge
-						if (relationType.equals(G_CanonicalRelationshipType.LIKES.name())) {
-							edge.setColor("blue");
-							edge.setLabel("+1");
-						
-						// if this is an OWNER_OF edge that is connected to a "MEDIA" node... 
-						} else if (relationType.equals(G_CanonicalRelationshipType.OWNER_OF.name()) 
-							&& (attachTo.getIdType().equals(G_CanonicalPropertyType.MEDIA.name()) 
-								|| a.getIdType().equals(G_CanonicalPropertyType.MEDIA.name()))) {
-							edge.setColor("green");
-							edge.setCount(3);
-						}
-						edge.addData("Local_Priority", "" + localPriority);
-						edge.addData("Min_Score_Required", "" + minimumScoreRequired);
-						edge.addData("Parent_Score", "" + inheritedScore);
-						edge.addData("Value", StringUtils.coalesc(" ", a.getLabel(), relationValue, attachTo.getLabel()));
-						edgeMap.put(key, edge);
-					}
-
-					// if this flag is set, we'll add the attributes to the attached node.
-					if (/*INHERIT_ATTRIBUTES*/ true) {
-						attachTo.inheritPropertiesOfExcept(a, skipInheritanceTypes);
-					}
-				}
-			}
-		} else {
-			logger.error("Invalid id for " + nodeType + " of node " + attachTo);
-		}
-		return a;
-	}
-	
 	private void setupNodeInheritance() {
 		// TODO Auto-generated method stub
 		skipInheritanceTypes = new ArrayList<String>();

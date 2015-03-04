@@ -3,9 +3,18 @@ package graphene.instagram.dao.impl.es;
 import graphene.dao.DocumentBuilder;
 import graphene.dao.DocumentGraphParser;
 import graphene.instagram.model.media.Media;
+import graphene.model.idl.G_EntityQuery;
+import graphene.model.idl.G_Property;
+import graphene.model.idl.G_PropertyType;
+import graphene.model.idl.G_SearchResult;
+import graphene.model.idl.G_SingletonRange;
+import graphene.services.HyperGraphBuilder;
 import graphene.util.validator.ValidationUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
@@ -23,35 +32,21 @@ public class DocumentBuilderInstagramESImpl implements DocumentBuilder {
 
 	protected ObjectMapper mapper;
 
+	@Inject
+	private HyperGraphBuilder<Object> phgb;
+
 	public DocumentBuilderInstagramESImpl() {
 		mapper = new ObjectMapper();
 	}
 
-	/**
-	 * TODO: Consider some kind of configurable mapping between the string of
-	 * _type and the class to cast to.
-	 * 
-	 * @param index
-	 * 
-	 * @param hit
-	 * @return
-	 */
-	/**
-	 * TODO: Consider some kind of configurable mapping between the string of
-	 * _type and the class to cast to.
-	 * 
-	 * @param index
-	 * 
-	 * @param hit
-	 * @return
-	 */
 	@Override
-	public Object buildEntityFromDocument(final int index, final JsonNode hit) {
-		// ////////////////////////////////
+	public G_SearchResult buildSearchResultFromDocument(final int index, final JsonNode hit, final G_EntityQuery sq) {
+
 		String type = null;
 		DoubleNode d = null;
 		JsonNode source = null;
 		Object o = null;
+		final G_SearchResult sr = null;
 		try {
 			final JsonNode x = hit.get("_type");
 			if (x == null) {
@@ -67,10 +62,17 @@ public class DocumentBuilderInstagramESImpl implements DocumentBuilder {
 
 			source = hit.findValue("_source");
 			if (ValidationUtils.isValid(source)) {
-				o = mapper.readValue(source.toString(), Media.class);
-				final Media castObj = (Media) o;
-				additionalProperties = castObj.getAdditionalProperties();
-				o = castObj;
+
+				if ("media".equalsIgnoreCase(type)) {
+
+					o = mapper.readValue(source.toString(), Media.class);
+					final Media castObj = (Media) o;
+					additionalProperties = castObj.getAdditionalProperties();
+					o = castObj;
+				} else {
+					logger.error("Could not parse type " + type);
+				}
+
 			} else {
 				logger.error("Could not find the source of result. There may be something wrong with your ElasticSearch instance");
 			}
@@ -82,6 +84,41 @@ public class DocumentBuilderInstagramESImpl implements DocumentBuilder {
 							hit.findValue(DocumentGraphParser.HIGHLIGHT));
 				}
 			}
+			final DocumentGraphParser parserForObject = phgb.getParserForObject(o);
+			if (parserForObject != null) {
+				final ArrayList<G_Property> result = new ArrayList<G_Property>();
+
+				result.add(G_Property
+						.newBuilder()
+						.setFriendlyText(DocumentGraphParser.SCORE)
+						.setRange(
+								G_SingletonRange.newBuilder().setType(G_PropertyType.DOUBLE).setValue(d.asDouble(0.0d))
+										.build()).build());
+				result.add(G_Property
+						.newBuilder()
+						.setFriendlyText(DocumentGraphParser.CARDINAL_ORDER)
+						.setRange(
+								G_SingletonRange.newBuilder().setType(G_PropertyType.LONG).setValue(index + 1).build())
+						.build());
+				if (hit.has(DocumentGraphParser.HIGHLIGHT)) {
+					result.add(G_Property
+							.newBuilder()
+							.setFriendlyText(DocumentGraphParser.HIGHLIGHT)
+							.setRange(
+									G_SingletonRange.newBuilder().setType(G_PropertyType.STRING).setValue(index + 1)
+											.build()).build());
+				}
+				sr.setScore(d.asDouble(0.0d));
+				sr.setResult(result);
+				final Map<String, List<G_Property>> map = new HashMap<String, List<G_Property>>();
+				map.put(DocumentGraphParser.SUMMARY, (List<G_Property>) parserForObject.populateSearchResult(sr, sq));
+				sr.setNamedProperties(map);
+
+				// populatedTableResults.add(parserForObject.getAdditionalProperties(o));
+			} else {
+				logger.error("Could not find parser for " + o);
+			}
+
 		} catch (final JsonParseException e) {
 
 			logger.error("Parsing exception " + type + " " + e.getMessage());
@@ -97,6 +134,6 @@ public class DocumentBuilderInstagramESImpl implements DocumentBuilder {
 			logger.error("IO Exception " + type + " " + e.getMessage());
 		}
 
-		return o;
+		return sr;
 	}
 }
