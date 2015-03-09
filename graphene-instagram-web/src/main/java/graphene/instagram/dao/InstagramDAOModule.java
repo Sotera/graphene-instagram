@@ -5,9 +5,12 @@ import graphene.augment.snlp.services.SentimentAnalyzerImpl;
 import graphene.business.commons.exception.DataAccessException;
 import graphene.dao.CombinedDAO;
 import graphene.dao.DAOModule;
+import graphene.dao.DataSourceListDAO;
+import graphene.dao.DocumentBuilder;
 import graphene.dao.GroupDAO;
 import graphene.dao.IconService;
 import graphene.dao.LoggingDAO;
+import graphene.dao.StartupProcedures;
 import graphene.dao.StyleService;
 import graphene.dao.UserDAO;
 import graphene.dao.UserGroupDAO;
@@ -25,7 +28,11 @@ import graphene.hts.sentences.SentenceExtractorImpl;
 import graphene.instagram.dao.impl.GraphTraversalRuleServiceImpl;
 import graphene.instagram.dao.impl.IconServiceImpl;
 import graphene.instagram.dao.impl.InstagramDataAccess;
+import graphene.instagram.dao.impl.es.DataSourceListDAOESImpl;
+import graphene.instagram.dao.impl.es.DocumentBuilderInstagramESImpl;
+import graphene.instagram.web.services.InstagramStartupProceduresImpl;
 import graphene.model.idl.G_DataAccess;
+import graphene.model.idl.G_SymbolConstants;
 import graphene.services.StopWordService;
 import graphene.services.StopWordServiceImpl;
 import graphene.services.StyleServiceImpl;
@@ -62,6 +69,8 @@ public class InstagramDAOModule {
 		binder.bind(G_DataAccess.class, InstagramDataAccess.class);
 		binder.bind(StyleService.class, StyleServiceImpl.class);
 
+		binder.bind(DataSourceListDAO.class, DataSourceListDAOESImpl.class).eagerLoad();
+		binder.bind(DocumentBuilder.class, DocumentBuilderInstagramESImpl.class);
 		binder.bind(CombinedDAO.class, CombinedDAOESImpl.class);
 		binder.bind(ESRestAPIConnection.class, ESRestAPIConnectionImpl.class).eagerLoad();
 
@@ -72,6 +81,7 @@ public class InstagramDAOModule {
 		binder.bind(IconService.class, IconServiceImpl.class);
 		binder.bind(StopWordService.class, StopWordServiceImpl.class);
 
+		binder.bind(StartupProcedures.class, InstagramStartupProceduresImpl.class);
 		binder.bind(SentimentAnalyzer.class, SentimentAnalyzerImpl.class);
 
 		binder.bind(LoggingDAO.class, LoggingDAODefaultESImpl.class).eagerLoad();
@@ -154,8 +164,8 @@ public class InstagramDAOModule {
 
 	public void contributeApplicationDefaults(final MappedConfiguration<String, String> configuration) {
 		configuration.add(MITIEModule.ENABLED, "true");
-		configuration.add(JestModule.ES_DEFAULT_TIMEOUT, "30s");
-
+		configuration.override(JestModule.ES_DEFAULT_TIMEOUT, "30s");
+		configuration.override(G_SymbolConstants.ENABLE_WORKSPACES, "false");
 	}
 
 }

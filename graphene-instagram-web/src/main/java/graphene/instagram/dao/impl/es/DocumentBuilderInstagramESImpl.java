@@ -5,14 +5,17 @@ import graphene.dao.DocumentGraphParser;
 import graphene.instagram.model.media.Media;
 import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_Property;
+import graphene.model.idl.G_PropertyTag;
 import graphene.model.idl.G_PropertyType;
 import graphene.model.idl.G_SearchResult;
 import graphene.model.idl.G_SingletonRange;
+import graphene.model.idlhelper.PropertyHelper;
 import graphene.services.HyperGraphBuilder;
 import graphene.util.validator.ValidationUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +49,8 @@ public class DocumentBuilderInstagramESImpl implements DocumentBuilder {
 		DoubleNode d = null;
 		JsonNode source = null;
 		Object o = null;
-		final G_SearchResult sr = null;
+		G_SearchResult sr = null;
+		
 		try {
 			final JsonNode x = hit.get("_type");
 			if (x == null) {
@@ -86,35 +90,21 @@ public class DocumentBuilderInstagramESImpl implements DocumentBuilder {
 			}
 			final DocumentGraphParser parserForObject = phgb.getParserForObject(o);
 			if (parserForObject != null) {
-				final ArrayList<G_Property> result = new ArrayList<G_Property>();
-
-				result.add(G_Property
-						.newBuilder()
-						.setFriendlyText(DocumentGraphParser.SCORE)
-						.setRange(
-								G_SingletonRange.newBuilder().setType(G_PropertyType.DOUBLE).setValue(d.asDouble(0.0d))
-										.build()).build());
-				result.add(G_Property
-						.newBuilder()
-						.setFriendlyText(DocumentGraphParser.CARDINAL_ORDER)
-						.setRange(
-								G_SingletonRange.newBuilder().setType(G_PropertyType.LONG).setValue(index + 1).build())
-						.build());
-				if (hit.has(DocumentGraphParser.HIGHLIGHT)) {
-					result.add(G_Property
-							.newBuilder()
-							.setFriendlyText(DocumentGraphParser.HIGHLIGHT)
-							.setRange(
-									G_SingletonRange.newBuilder().setType(G_PropertyType.STRING).setValue(index + 1)
-											.build()).build());
-				}
+				final ArrayList<G_Property> props = new ArrayList<G_Property>();
+				
+				props.add(new PropertyHelper(DocumentGraphParser.SCORE, DocumentGraphParser.SCORE, 0.0, Collections.singletonList(G_PropertyTag.STAT)));
+				props.add(new PropertyHelper(DocumentGraphParser.CARDINAL_ORDER, DocumentGraphParser.CARDINAL_ORDER, (index + 1), Collections.singletonList(G_PropertyTag.STAT)));
+				props.add(new PropertyHelper(DocumentGraphParser.HIGHLIGHT, DocumentGraphParser.HIGHLIGHT, (index + 1), Collections.singletonList(G_PropertyTag.STAT)));
+				
+				sr = new G_SearchResult();
 				sr.setScore(d.asDouble(0.0d));
-				sr.setResult(result);
+				sr.setResult(o);
 				final Map<String, List<G_Property>> map = new HashMap<String, List<G_Property>>();
 				map.put(DocumentGraphParser.SUMMARY, (List<G_Property>) parserForObject.populateSearchResult(sr, sq));
 				sr.setNamedProperties(map);
 
 				// populatedTableResults.add(parserForObject.getAdditionalProperties(o));
+				
 			} else {
 				logger.error("Could not find parser for " + o);
 			}
