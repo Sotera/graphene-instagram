@@ -1,7 +1,7 @@
 package graphene.instagram.dao.impl.es;
 
 import graphene.dao.DocumentBuilder;
-import graphene.dao.DocumentGraphParser;
+import graphene.dao.G_Parser;
 import graphene.instagram.model.media.Media;
 import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_Property;
@@ -81,26 +81,26 @@ public class DocumentBuilderInstagramESImpl implements DocumentBuilder {
 				logger.error("Could not find the source of result. There may be something wrong with your ElasticSearch instance");
 			}
 			if (additionalProperties != null) {
-				additionalProperties.put(DocumentGraphParser.SCORE, d.asDouble());
-				additionalProperties.put(DocumentGraphParser.CARDINAL_ORDER, index + 1);
-				if (hit.has(DocumentGraphParser.HIGHLIGHT)) {
-					additionalProperties.put(DocumentGraphParser.HIGHLIGHT,
-							hit.findValue(DocumentGraphParser.HIGHLIGHT));
+				additionalProperties.put(G_Parser.SCORE, d.asDouble());
+				additionalProperties.put(G_Parser.CARDINAL_ORDER, index + 1);
+				if (hit.has(G_Parser.HIGHLIGHT)) {
+					additionalProperties.put(G_Parser.HIGHLIGHT,
+							hit.findValue(G_Parser.HIGHLIGHT));
 				}
 			}
-			final DocumentGraphParser parserForObject = phgb.getParserForObject(o);
+			final G_Parser parserForObject = phgb.getParserForObject(o);
 			if (parserForObject != null) {
 				final ArrayList<G_Property> props = new ArrayList<G_Property>();
 				
-				props.add(new PropertyHelper(DocumentGraphParser.SCORE, DocumentGraphParser.SCORE, 0.0, Collections.singletonList(G_PropertyTag.STAT)));
-				props.add(new PropertyHelper(DocumentGraphParser.CARDINAL_ORDER, DocumentGraphParser.CARDINAL_ORDER, (index + 1), Collections.singletonList(G_PropertyTag.STAT)));
-				props.add(new PropertyHelper(DocumentGraphParser.HIGHLIGHT, DocumentGraphParser.HIGHLIGHT, (index + 1), Collections.singletonList(G_PropertyTag.STAT)));
+				props.add(new PropertyHelper(G_Parser.SCORE, G_Parser.SCORE, 0.0, Collections.singletonList(G_PropertyTag.STAT)));
+				props.add(new PropertyHelper(G_Parser.CARDINAL_ORDER, G_Parser.CARDINAL_ORDER, (index + 1), Collections.singletonList(G_PropertyTag.STAT)));
+				props.add(new PropertyHelper(G_Parser.HIGHLIGHT, G_Parser.HIGHLIGHT, (index + 1), Collections.singletonList(G_PropertyTag.STAT)));
 				
 				sr = new G_SearchResult();
 				sr.setScore(d.asDouble(0.0d));
 				sr.setResult(o);
 				final Map<String, List<G_Property>> map = new HashMap<String, List<G_Property>>();
-				map.put(DocumentGraphParser.SUMMARY, (List<G_Property>) parserForObject.populateSearchResult(sr, sq));
+				map.put(G_Parser.ROWFORTABLE, (List<G_Property>) parserForObject.buildEntityFromDocument(sr, sq));
 				sr.setNamedProperties(map);
 
 				// populatedTableResults.add(parserForObject.getAdditionalProperties(o));

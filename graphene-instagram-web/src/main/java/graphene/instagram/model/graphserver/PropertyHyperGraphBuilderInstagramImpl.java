@@ -2,7 +2,7 @@ package graphene.instagram.model.graphserver;
 
 import graphene.business.commons.DocumentError;
 import graphene.dao.CombinedDAO;
-import graphene.dao.DocumentGraphParser;
+import graphene.dao.G_Parser;
 import graphene.dao.GenericDAO;
 import graphene.instagram.dao.GraphTraversalRuleService;
 import graphene.model.idl.G_CanonicalPropertyType;
@@ -69,7 +69,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	// @InjectPage
 	// private CombinedEntitySearchPage searchPage;
 
-	public PropertyHyperGraphBuilderInstagramImpl(final Collection<DocumentGraphParser> singletons) {
+	public PropertyHyperGraphBuilderInstagramImpl(final Collection<G_Parser> singletons) {
 		super(singletons);
 		// constant legend items regardless of what other node types are present
 		// in graph
@@ -146,7 +146,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	public boolean callBack(final G_SearchResult p) {
 
 		if (ValidationUtils.isValid(p)) {
-			final DocumentGraphParser parser = getParserForObject(p);
+			final G_Parser parser = getParserForObject(p);
 			if (parser != null) {
 				return parser.parse(p, null);
 			} else {
@@ -161,7 +161,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	@Override
 	public boolean callBack(final G_SearchResult p, final G_EntityQuery q) {
 		if (ValidationUtils.isValid(p)) {
-			final DocumentGraphParser parser = getParserForObject(p);
+			final G_Parser parser = getParserForObject(p);
 			if (parser != null) {
 				return parser.parse(p, q);
 			} else {
@@ -298,13 +298,13 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	}
 
 	@Override
-	public DocumentGraphParser getParserForObject(final Object obj) {
-		DocumentGraphParser dgp = null;
+	public G_Parser getParserForObject(final Object obj) {
+		G_Parser dgp = null;
 		if (obj == null) {
 			logger.warn("Object was invalid");
 
 		} else {
-			for (final DocumentGraphParser s : singletons) {
+			for (final G_Parser s : singletons) {
 				if (s.getSupportedObjects().contains(obj.getClass().getCanonicalName())) {
 					logger.debug("Found DocumentGraphParser which supports " + s.getSupportedObjects());
 					dgp = s;

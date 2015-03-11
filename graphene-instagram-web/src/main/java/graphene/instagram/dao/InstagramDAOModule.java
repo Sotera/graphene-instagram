@@ -11,6 +11,7 @@ import graphene.dao.GroupDAO;
 import graphene.dao.IconService;
 import graphene.dao.LoggingDAO;
 import graphene.dao.StartupProcedures;
+import graphene.dao.StopWordService;
 import graphene.dao.StyleService;
 import graphene.dao.UserDAO;
 import graphene.dao.UserGroupDAO;
@@ -33,8 +34,7 @@ import graphene.instagram.dao.impl.es.DocumentBuilderInstagramESImpl;
 import graphene.instagram.web.services.InstagramStartupProceduresImpl;
 import graphene.model.idl.G_DataAccess;
 import graphene.model.idl.G_SymbolConstants;
-import graphene.services.StopWordService;
-import graphene.services.StopWordServiceImpl;
+import graphene.services.StopWordServiceDefaultImpl;
 import graphene.services.StyleServiceImpl;
 
 import org.apache.tapestry5.ioc.Configuration;
@@ -79,7 +79,7 @@ public class InstagramDAOModule {
 
 		binder.bind(MitieDAO.class, MitieDAOImpl.class);
 		binder.bind(IconService.class, IconServiceImpl.class);
-		binder.bind(StopWordService.class, StopWordServiceImpl.class);
+		binder.bind(StopWordService.class, StopWordServiceDefaultImpl.class);
 
 		binder.bind(StartupProcedures.class, InstagramStartupProceduresImpl.class);
 		binder.bind(SentimentAnalyzer.class, SentimentAnalyzerImpl.class);

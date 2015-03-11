@@ -1,6 +1,6 @@
 package graphene.instagram.model.graphserver;
 
-import graphene.dao.DocumentGraphParser;
+import graphene.dao.G_Parser;
 import graphene.instagram.model.media.CommentData;
 import graphene.instagram.model.media.LikeData;
 import graphene.instagram.model.media.Media;
@@ -69,8 +69,8 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 			if (phgb.isPreviouslyScannedResult(reportId)) {
 				return false;
 			}
-			populateSearchResult(sr, q);
-			p.getAdditionalProperties().get(DocumentGraphParser.SCORE);
+			buildEntityFromDocument(sr, q);
+			p.getAdditionalProperties().get(G_Parser.SCORE);
 
 			phgb.addScannedResult(reportId);
 			// report node does not attach to anything.

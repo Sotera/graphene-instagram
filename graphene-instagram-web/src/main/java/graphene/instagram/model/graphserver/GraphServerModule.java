@@ -1,6 +1,6 @@
 package graphene.instagram.model.graphserver;
 
-import graphene.dao.DocumentGraphParser;
+import graphene.dao.G_Parser;
 import graphene.dao.FederatedPropertyGraphServer;
 import graphene.instagram.dao.GraphTraversalRuleService;
 import graphene.model.idl.G_CanonicalPropertyType;
@@ -22,7 +22,7 @@ public class GraphServerModule {
 		binder.bind(HyperGraphBuilder.class, PropertyHyperGraphBuilderInstagramImpl.class).withId("HyperProperty")
 				.eagerLoad().scope(ScopeConstants.PERTHREAD);
 
-		binder.bind(DocumentGraphParser.class, MediaGraphParser.class).withId(MEDIA);
+		binder.bind(G_Parser.class, MediaGraphParser.class).withId(MEDIA);
 
 	}
 
@@ -40,8 +40,8 @@ public class GraphServerModule {
 	 * @param media
 	 */
 	@Contribute(HyperGraphBuilder.class)
-	public static void contributeParsers(final Configuration<DocumentGraphParser> singletons,
-			@InjectService(MEDIA) final DocumentGraphParser media) {
+	public static void contributeParsers(final Configuration<G_Parser> singletons,
+			@InjectService(MEDIA) final G_Parser media) {
 		singletons.add(media);
 	}
 

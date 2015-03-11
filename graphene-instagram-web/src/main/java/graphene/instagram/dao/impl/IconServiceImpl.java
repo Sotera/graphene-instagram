@@ -1,12 +1,18 @@
 package graphene.instagram.dao.impl;
 
 import graphene.dao.IconService;
+import graphene.model.idl.G_EntityQuery;
+import graphene.model.idl.G_ListRange;
+import graphene.model.idl.G_PropertyMatchDescriptor;
+import graphene.model.idl.G_PropertyType;
+import graphene.model.idl.G_SingletonRange;
 import graphene.util.Tuple;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +44,29 @@ public class IconServiceImpl implements IconService {
 		}
 		iconPatternMap.put(p, iconClass);
 		iconMap.put(p, new Tuple<String, String>(iconClass, reason));
+	}
+
+	@Override
+	public List<Object> getIconsForText(final String text, final G_EntityQuery sq) {
+		final ArrayList<String> otherKeys = new ArrayList<String>();
+		final List<G_PropertyMatchDescriptor> propertyMatchDescriptors = sq.getPropertyMatchDescriptors();
+		for (final G_PropertyMatchDescriptor p : propertyMatchDescriptors) {
+			final Object range = p.getRange();
+			if (range instanceof G_SingletonRange) {
+				final G_SingletonRange s = ((G_SingletonRange) range);
+				if (s.getType().equals(G_PropertyType.STRING)) {
+					otherKeys.add((String) s.getValue());
+				}
+			} else if (range instanceof G_ListRange) {
+				final G_ListRange lr = (G_ListRange) range;
+				if (lr.getType().equals(G_PropertyType.STRING)) {
+					for (final Object i : lr.getValues()) {
+						otherKeys.add((String) i);
+					}
+				}
+			}
+		}
+		return new ArrayList(getIconsForText(text, otherKeys.toArray(new String[otherKeys.size()])));
 	}
 
 	@Override

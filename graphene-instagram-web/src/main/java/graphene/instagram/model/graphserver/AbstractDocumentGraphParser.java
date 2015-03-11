@@ -1,6 +1,6 @@
 package graphene.instagram.model.graphserver;
 
-import graphene.dao.DocumentGraphParser;
+import graphene.dao.G_Parser;
 import graphene.dao.IconService;
 import graphene.hts.entityextraction.AccountExtractor;
 import graphene.hts.entityextraction.CreditCardExtractor;
@@ -55,7 +55,7 @@ import org.slf4j.Logger;
  * @param <T>
  * 
  */
-public abstract class AbstractDocumentGraphParser<T> implements DocumentGraphParser<T> {
+public abstract class AbstractDocumentGraphParser<T> implements G_Parser<T> {
 	public static final String MEDIA_ID = "mediaid";
 	public static final String MEDIA_LABEL = "medialabel";
 	public static final String MEDIA_LINK = "medialink";
