@@ -241,7 +241,8 @@ public class SearchResultsView {
 
 	public Double getAmount() {
 
-		final Double d = (Double) PropertyHelper.getSingletonValueByKey(getEntityProperties(), G_Parser.TOTALAMOUNTNBR);
+		final Double d = (Double) PropertyHelper.getSingletonValue(getEntity().getProperties().get(
+				G_Parser.TOTALAMOUNTNBR));
 		if (d == null) {
 			return 0.0d;
 		} else {
@@ -250,10 +251,8 @@ public class SearchResultsView {
 	}
 
 	public Collection<G_Property> getCIdentifierList() {
-		return (Collection<G_Property>) PropertyHelper
-				.getListValueByKey(getEntityProperties(), G_Parser.SUBJECTCIDLIST);
-		// return (Collection<Triple<String, String, String>>)
-		// currentEntity.get(DocumentGraphParser.SUBJECTCIDLIST);
+		return (Collection<G_Property>) PropertyHelper.getListValue(getEntity().getProperties().get(
+				G_Parser.SUBJECTCIDLIST));
 	}
 
 	public String getDate() {
@@ -349,15 +348,6 @@ public class SearchResultsView {
 	private G_Entity getEntity() {
 		if (currentSearchResult != null) {
 			return (G_Entity) currentSearchResult.getResult();
-		} else {
-			return null;
-		}
-	}
-
-	private List<G_Property> getEntityProperties() {
-		final G_Entity e = getEntity();
-		if (e != null) {
-			return e.getProperties();
 		} else {
 			return null;
 		}
@@ -515,25 +505,25 @@ public class SearchResultsView {
 	}
 
 	public Long getRank() {
-		return (Long) PropertyHelper.getSingletonValueByKey(getEntityProperties(), G_Parser.CARDINAL_ORDER);
+		return (Long) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.CARDINAL_ORDER));
 	}
 
 	public String getReportId() {
-		return (String) PropertyHelper.getSingletonValueByKey(getEntityProperties(), G_Parser.REPORT_ID);
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.REPORT_ID));
 	}
 
 	public String getReportPageLink() {
-		return (String) PropertyHelper.getSingletonValueByKey(getEntityProperties(), G_Parser.REPORT_LINK);
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.REPORT_LINK));
 
 	}
 
 	public String getReportType() {
-		return (String) PropertyHelper.getSingletonValueByKey(getEntityProperties(), G_Parser.REPORT_TYPE);
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.REPORT_TYPE));
 	}
 
 	public String getScore() {
 		return DataFormatConstants.formatScore(
-				(Double) PropertyHelper.getSingletonValueByKey(getEntityProperties(), G_Parser.SCORE), 0.0d);
+				(Double) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.SCORE)), 0.0d);
 
 	}
 

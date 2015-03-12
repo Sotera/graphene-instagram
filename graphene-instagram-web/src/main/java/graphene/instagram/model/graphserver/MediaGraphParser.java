@@ -18,6 +18,7 @@ import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,31 +38,36 @@ public class MediaGraphParser extends InstagramParser<Media> {
 	@Override
 	public G_Entity buildEntityFromDocument(final JsonNode sr, final G_EntityQuery q) {
 
-		final List<G_Property> list = new ArrayList<G_Property>();
+		final Map<String, G_Property> map = new HashMap<String, G_Property>();
 		resetLists();
 		final Media p = getClassFromJSON(sr, Media.class);
 
-		list.add(new PropertyHelper(MEDIA_LABEL, MEDIA_LABEL, getReportLabel(p), Collections
-				.singletonList(G_PropertyTag.LABEL)));
-		list.add(new PropertyHelper(MEDIA_ID, MEDIA_ID, p.getId(), Collections.singletonList(G_PropertyTag.ID)));
-		list.add(new PropertyHelper(MEDIA_LINK, MEDIA_LINK, p.getLink(), Collections
-				.singletonList(G_PropertyTag.LINKED_DATA)));
-		list.add(new PropertyHelper(MEDIA_OWNER, MEDIA_OWNER, p.getUsername(), Collections
-				.singletonList(G_PropertyTag.ID)));
-		list.add(new PropertyHelper(MEDIA_CREATED_TIME, MEDIA_CREATED_TIME, p.getCreatedTime(), G_PropertyType.DATE,
-				Collections.singletonList(G_PropertyTag.DATE)));
-		list.add(new PropertyHelper(MEDIA_CAPTION_TEXT, MEDIA_CAPTION_TEXT, p.getCaptionText(), Collections
-				.singletonList(G_PropertyTag.TEXT)));
-		list.add(new PropertyHelper(MEDIA_LIKE_COUNT, MEDIA_LIKE_COUNT, p.getLikes().getCount(), G_PropertyType.LONG,
-				Collections.singletonList(G_PropertyTag.STAT)));
-		list.add(new PropertyHelper(MEDIA_COMMENT_COUNT, MEDIA_COMMENT_COUNT, p.getComments().getCount(),
+		map.put(MEDIA_LABEL,
+				new PropertyHelper(MEDIA_LABEL, MEDIA_LABEL, getReportLabel(p), Collections
+						.singletonList(G_PropertyTag.LABEL)));
+		map.put(MEDIA_ID,
+				new PropertyHelper(MEDIA_ID, MEDIA_ID, p.getId(), Collections.singletonList(G_PropertyTag.ID)));
+		map.put(MEDIA_LINK,
+				new PropertyHelper(MEDIA_LINK, MEDIA_LINK, p.getLink(), Collections
+						.singletonList(G_PropertyTag.LINKED_DATA)));
+		map.put(MEDIA_OWNER,
+				new PropertyHelper(MEDIA_OWNER, MEDIA_OWNER, p.getUsername(), Collections
+						.singletonList(G_PropertyTag.ID)));
+		map.put(MEDIA_CREATED_TIME, new PropertyHelper(MEDIA_CREATED_TIME, MEDIA_CREATED_TIME, p.getCreatedTime(),
+				G_PropertyType.DATE, Collections.singletonList(G_PropertyTag.DATE)));
+		map.put(MEDIA_CAPTION_TEXT, new PropertyHelper(MEDIA_CAPTION_TEXT, MEDIA_CAPTION_TEXT, p.getCaptionText(),
+				Collections.singletonList(G_PropertyTag.TEXT)));
+		map.put(MEDIA_LIKE_COUNT, new PropertyHelper(MEDIA_LIKE_COUNT, MEDIA_LIKE_COUNT, p.getLikes().getCount(),
 				G_PropertyType.LONG, Collections.singletonList(G_PropertyTag.STAT)));
-		list.add(new PropertyHelper(MEDIA_THUMBNAIL, MEDIA_THUMBNAIL, p.getThumbnail(), Collections
-				.singletonList(G_PropertyTag.LINKED_DATA)));
-		list.add(new PropertyHelper(MEDIA_LOCATION_LATLON, MEDIA_LOCATION_LATLON, p.getLocation().getLatitude() + ", "
-				+ p.getLocation().getLongitude(), Collections.singletonList(G_PropertyTag.GEO)));
-		list.add(new PropertyHelper(MEDIA_LOCATION_NAME, MEDIA_LOCATION_NAME, p.getLocation().getName(), Collections
-				.singletonList(G_PropertyTag.GEO)));
+		map.put(MEDIA_COMMENT_COUNT, new PropertyHelper(MEDIA_COMMENT_COUNT, MEDIA_COMMENT_COUNT, p.getComments()
+				.getCount(), G_PropertyType.LONG, Collections.singletonList(G_PropertyTag.STAT)));
+		map.put(MEDIA_THUMBNAIL,
+				new PropertyHelper(MEDIA_THUMBNAIL, MEDIA_THUMBNAIL, p.getThumbnail(), Collections
+						.singletonList(G_PropertyTag.LINKED_DATA)));
+		map.put(MEDIA_LOCATION_LATLON, new PropertyHelper(MEDIA_LOCATION_LATLON, MEDIA_LOCATION_LATLON, p.getLocation()
+				.getLatitude() + ", " + p.getLocation().getLongitude(), Collections.singletonList(G_PropertyTag.GEO)));
+		map.put(MEDIA_LOCATION_NAME, new PropertyHelper(MEDIA_LOCATION_NAME, MEDIA_LOCATION_NAME, p.getLocation()
+				.getName(), Collections.singletonList(G_PropertyTag.GEO)));
 
 		// list.add(G_Property
 		// .newBuilder()
@@ -176,7 +182,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		// .build()).build());
 		final List<G_EntityTag> tags = new ArrayList<G_EntityTag>();
 		tags.add(G_EntityTag.FILE);
-		final EntityHelper entity = new EntityHelper(getReportId(p), tags, null, null, list);
+		final EntityHelper entity = new EntityHelper(getReportId(p), tags, null, null, map);
 		return entity;
 		// return list;
 	}
@@ -212,7 +218,8 @@ public class MediaGraphParser extends InstagramParser<Media> {
 	@Override
 	public boolean parse(final G_SearchResult sr, final G_EntityQuery q) {
 		final G_Entity entity = (G_Entity) sr.getResult();
-		final Media p = (Media) PropertyHelper.getSingletonValueByKey(entity.getProperties(), DTO);
+
+		final Media p = getDTO(sr, Media.class);
 		// final Media p = getClassFromJSON(sr, Media.class);s
 		// Make nodes dealing with the report itself.
 		if (ValidationUtils.isValid(p)) {

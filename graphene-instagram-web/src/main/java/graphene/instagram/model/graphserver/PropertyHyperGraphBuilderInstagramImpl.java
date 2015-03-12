@@ -146,8 +146,8 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	public boolean callBack(final G_SearchResult t, final G_EntityQuery q) {
 		if (ValidationUtils.isValid(t.getResult())) {
 			final G_Entity entity = (G_Entity) t.getResult();
-			final String type = (String) PropertyHelper.getSingletonValueByKey(entity.getProperties(),
-					G_Parser.REPORT_TYPE);
+			final String type = (String) PropertyHelper.getSingletonValue(entity.getProperties().get(
+					G_Parser.REPORT_TYPE));
 
 			final G_Parser parser = db.getParserForObject(type);
 			if (parser != null) {
