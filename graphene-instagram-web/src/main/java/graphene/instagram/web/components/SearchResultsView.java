@@ -503,17 +503,11 @@ public class SearchResultsView {
 		columnArray.put(new JSONObject("mDataProp", properties[columnArray.length()][0], "bSortable", "true", "sWidth",
 				properties[columnArray.length()][1], "sType", "string"));
 
-		// json.put("sScrollX", "100%");
-		// json.put("bScrollCollapse", false);
 		json.put("aoColumns", columnArray);
 		json.put("oLanguage", new JSONObject("sSearch", "Filter:"));
 
 		return json;
 	}
-
-	// /////////////////////////////////////////////////////////////////////
-	// FILTER
-	// /////////////////////////////////////////////////////////////////////
 
 	public Link getPivotLink(final String term) {
 		final Link l = searchPage.set(null, null, G_SearchType.COMPARE_CONTAINS.name(), term, defaultMaxResults);

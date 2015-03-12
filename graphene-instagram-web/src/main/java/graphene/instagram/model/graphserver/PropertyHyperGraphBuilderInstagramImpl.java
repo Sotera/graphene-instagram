@@ -2,15 +2,18 @@ package graphene.instagram.model.graphserver;
 
 import graphene.business.commons.DocumentError;
 import graphene.dao.CombinedDAO;
+import graphene.dao.DocumentBuilder;
 import graphene.dao.G_Parser;
 import graphene.dao.GenericDAO;
 import graphene.instagram.dao.GraphTraversalRuleService;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_CanonicalRelationshipType;
+import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_IdType;
 import graphene.model.idl.G_SearchResult;
 import graphene.model.idl.G_SearchTuple;
+import graphene.model.idlhelper.PropertyHelper;
 import graphene.services.PropertyHyperGraphBuilder;
 import graphene.util.DataFormatConstants;
 import graphene.util.StringUtils;
@@ -63,11 +66,8 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	@Inject
 	private GraphTraversalRuleService ruleService;
 
-	/*
-	 * Note: Must implement the LinkGenerator interface
-	 */
-	// @InjectPage
-	// private CombinedEntitySearchPage searchPage;
+	@Inject
+	private DocumentBuilder db;
 
 	public PropertyHyperGraphBuilderInstagramImpl(final Collection<G_Parser> singletons) {
 		super(singletons);
@@ -143,27 +143,15 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	}
 
 	@Override
-	public boolean callBack(final G_SearchResult p) {
+	public boolean callBack(final G_SearchResult t, final G_EntityQuery q) {
+		if (ValidationUtils.isValid(t.getResult())) {
+			final G_Entity entity = (G_Entity) t.getResult();
+			final String type = (String) PropertyHelper.getSingletonValueByKey(entity.getProperties(),
+					G_Parser.REPORT_TYPE);
 
-		if (ValidationUtils.isValid(p)) {
-			final G_Parser parser = getParserForObject(p);
+			final G_Parser parser = db.getParserForObject(type);
 			if (parser != null) {
-				return parser.parse(p, null);
-			} else {
-				logger.warn("No parser was found for the supplied type, but carrying on.");
-				return true;
-			}
-		} else {
-			return false;
-		}
-	}
-
-	@Override
-	public boolean callBack(final G_SearchResult p, final G_EntityQuery q) {
-		if (ValidationUtils.isValid(p)) {
-			final G_Parser parser = getParserForObject(p);
-			if (parser != null) {
-				return parser.parse(p, q);
+				return parser.parse(t, q);
 			} else {
 				logger.warn("No parser was found for the supplied type, but carrying on.");
 				return true;
@@ -295,26 +283,6 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	@Override
 	public GenericDAO getDAO() {
 		return combinedDAO;
-	}
-
-	@Override
-	public G_Parser getParserForObject(final Object obj) {
-		G_Parser dgp = null;
-		if (obj == null) {
-			logger.warn("Object was invalid");
-
-		} else {
-			for (final G_Parser s : singletons) {
-				if (s.getSupportedObjects().contains(obj.getClass().getCanonicalName())) {
-					logger.debug("Found DocumentGraphParser which supports " + s.getSupportedObjects());
-					dgp = s;
-				}
-			}
-		}
-		if (dgp == null) {
-			logger.error("No handler for class " + obj);
-		}
-		return dgp;
 	}
 
 	@Override

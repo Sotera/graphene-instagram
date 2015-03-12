@@ -23,6 +23,7 @@ import graphene.dao.es.ESRestAPIConnectionImpl;
 import graphene.dao.es.JestModule;
 import graphene.dao.es.impl.CombinedDAOESImpl;
 import graphene.dao.es.impl.LoggingDAODefaultESImpl;
+import graphene.dao.es.impl.MultiDocumentBuilderESImpl;
 import graphene.hts.entityextraction.Extractor;
 import graphene.hts.keywords.KeywordExtractorImpl;
 import graphene.hts.sentences.SentenceExtractorImpl;
@@ -30,7 +31,6 @@ import graphene.instagram.dao.impl.GraphTraversalRuleServiceImpl;
 import graphene.instagram.dao.impl.IconServiceImpl;
 import graphene.instagram.dao.impl.InstagramDataAccess;
 import graphene.instagram.dao.impl.es.DataSourceListDAOESImpl;
-import graphene.instagram.dao.impl.es.DocumentBuilderInstagramESImpl;
 import graphene.instagram.web.services.InstagramStartupProceduresImpl;
 import graphene.model.idl.G_DataAccess;
 import graphene.model.idl.G_SymbolConstants;
@@ -70,7 +70,8 @@ public class InstagramDAOModule {
 		binder.bind(StyleService.class, StyleServiceImpl.class);
 
 		binder.bind(DataSourceListDAO.class, DataSourceListDAOESImpl.class).eagerLoad();
-		binder.bind(DocumentBuilder.class, DocumentBuilderInstagramESImpl.class);
+		binder.bind(DocumentBuilder.class, MultiDocumentBuilderESImpl.class);
+
 		binder.bind(CombinedDAO.class, CombinedDAOESImpl.class);
 		binder.bind(ESRestAPIConnection.class, ESRestAPIConnectionImpl.class).eagerLoad();
 

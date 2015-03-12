@@ -1,15 +1,8 @@
 package graphene.instagram.model.graphserver;
 
-import graphene.dao.G_Parser;
 import graphene.dao.IconService;
-import graphene.hts.entityextraction.AccountExtractor;
-import graphene.hts.entityextraction.CreditCardExtractor;
-import graphene.hts.entityextraction.EmailExtractor;
+import graphene.dao.es.impl.BasicParserESImpl;
 import graphene.hts.entityextraction.Extractor;
-import graphene.hts.entityextraction.MexicoRFCExtractor;
-import graphene.hts.entityextraction.PhoneExtractor;
-import graphene.hts.entityextraction.URLExtractor;
-import graphene.hts.entityextraction.USSSNExtractor;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.services.HyperGraphBuilder;
@@ -55,7 +48,7 @@ import org.slf4j.Logger;
  * @param <T>
  * 
  */
-public abstract class AbstractDocumentGraphParser<T> implements G_Parser<T> {
+public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 	public static final String MEDIA_ID = "mediaid";
 	public static final String MEDIA_LABEL = "medialabel";
 	public static final String MEDIA_LINK = "medialink";
@@ -136,31 +129,35 @@ public abstract class AbstractDocumentGraphParser<T> implements G_Parser<T> {
 
 	Set<String> datesFiled;
 
-	public AbstractDocumentGraphParser() {
-		extractors = new ArrayList<Extractor>();
-		extractors.add(new EmailExtractor());
-		extractors.add(new PhoneExtractor());
-		extractors.add(new URLExtractor());
-		extractors.add(new USSSNExtractor());
-		extractors.add(new CreditCardExtractor());
-		extractors.add(new MexicoRFCExtractor());
-		extractors.add(new AccountExtractor());
-
-		extractorMap = new HashMap<String, Extractor>();
-		final EmailExtractor emailExtractor = new EmailExtractor();
-		extractorMap.put(emailExtractor.getNodetype(), emailExtractor);
-		final PhoneExtractor phoneExtractor = new PhoneExtractor();
-		extractorMap.put(phoneExtractor.getNodetype(), phoneExtractor);
-		final URLExtractor urlExtractor = new URLExtractor();
-		extractorMap.put(urlExtractor.getNodetype(), urlExtractor);
-		final USSSNExtractor usssnExtractor = new USSSNExtractor();
-		extractorMap.put(usssnExtractor.getNodetype(), usssnExtractor);
-		final CreditCardExtractor creditCardExtractor = new CreditCardExtractor();
-		extractorMap.put(creditCardExtractor.getNodetype(), creditCardExtractor);
-		final MexicoRFCExtractor mexicoRFCExtractor = new MexicoRFCExtractor();
-		extractorMap.put(mexicoRFCExtractor.getNodetype(), mexicoRFCExtractor);
-		final AccountExtractor accountExtractor = new AccountExtractor();
-		extractorMap.put(accountExtractor.getNodetype(), accountExtractor);
+	public InstagramParser() {
+		// extractors = new ArrayList<Extractor>();
+		// extractors.add(new EmailExtractor());
+		// extractors.add(new PhoneExtractor());
+		// extractors.add(new URLExtractor());
+		// extractors.add(new USSSNExtractor());
+		// extractors.add(new CreditCardExtractor());
+		// extractors.add(new MexicoRFCExtractor());
+		// extractors.add(new AccountExtractor());
+		//
+		// extractorMap = new HashMap<String, Extractor>();
+		// final EmailExtractor emailExtractor = new EmailExtractor();
+		// extractorMap.put(emailExtractor.getNodetype(), emailExtractor);
+		// final PhoneExtractor phoneExtractor = new PhoneExtractor();
+		// extractorMap.put(phoneExtractor.getNodetype(), phoneExtractor);
+		// final URLExtractor urlExtractor = new URLExtractor();
+		// extractorMap.put(urlExtractor.getNodetype(), urlExtractor);
+		// final USSSNExtractor usssnExtractor = new USSSNExtractor();
+		// extractorMap.put(usssnExtractor.getNodetype(), usssnExtractor);
+		// final CreditCardExtractor creditCardExtractor = new
+		// CreditCardExtractor();
+		// extractorMap.put(creditCardExtractor.getNodetype(),
+		// creditCardExtractor);
+		// final MexicoRFCExtractor mexicoRFCExtractor = new
+		// MexicoRFCExtractor();
+		// extractorMap.put(mexicoRFCExtractor.getNodetype(),
+		// mexicoRFCExtractor);
+		// final AccountExtractor accountExtractor = new AccountExtractor();
+		// extractorMap.put(accountExtractor.getNodetype(), accountExtractor);
 
 	}
 
@@ -305,18 +302,6 @@ public abstract class AbstractDocumentGraphParser<T> implements G_Parser<T> {
 	}
 
 	/**
-	 * @return the supported
-	 */
-	public final List<String> getSupported() {
-		return supported;
-	}
-
-	@Override
-	public List<String> getSupportedObjects() {
-		return supported;
-	}
-
-	/**
 	 * @return the parenting
 	 */
 	public final boolean isParenting() {
@@ -379,14 +364,6 @@ public abstract class AbstractDocumentGraphParser<T> implements G_Parser<T> {
 
 	public void setReportLinkTitle(final String reportLinkTitle) {
 		this.reportLinkTitle = reportLinkTitle;
-	}
-
-	/**
-	 * @param supported
-	 *            the supported to set
-	 */
-	public final void setSupported(final List<String> supported) {
-		this.supported = supported;
 	}
 
 }

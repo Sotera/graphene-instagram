@@ -1,34 +1,184 @@
 package graphene.instagram.model.graphserver;
 
-import graphene.dao.G_Parser;
 import graphene.instagram.model.media.CommentData;
 import graphene.instagram.model.media.LikeData;
 import graphene.instagram.model.media.Media;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_CanonicalRelationshipType;
+import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
+import graphene.model.idl.G_EntityTag;
 import graphene.model.idl.G_Property;
 import graphene.model.idl.G_PropertyTag;
 import graphene.model.idl.G_PropertyType;
 import graphene.model.idl.G_SearchResult;
-import graphene.model.idl.G_SingletonRange;
+import graphene.model.idlhelper.EntityHelper;
 import graphene.model.idlhelper.PropertyHelper;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GenericNode;
 
-public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
+import com.fasterxml.jackson.databind.JsonNode;
+
+public class MediaGraphParser extends InstagramParser<Media> {
 
 	public MediaGraphParser() {
 		supported = new ArrayList<String>(1);
 		supported.add(Media.class.getCanonicalName());
 		parenting = false;
+	}
+
+	@Override
+	public G_Entity buildEntityFromDocument(final JsonNode sr, final G_EntityQuery q) {
+
+		final List<G_Property> list = new ArrayList<G_Property>();
+		resetLists();
+		final Media p = getClassFromJSON(sr, Media.class);
+
+		list.add(new PropertyHelper(MEDIA_LABEL, MEDIA_LABEL, getReportLabel(p), Collections
+				.singletonList(G_PropertyTag.LABEL)));
+		list.add(new PropertyHelper(MEDIA_ID, MEDIA_ID, p.getId(), Collections.singletonList(G_PropertyTag.ID)));
+		list.add(new PropertyHelper(MEDIA_LINK, MEDIA_LINK, p.getLink(), Collections
+				.singletonList(G_PropertyTag.LINKED_DATA)));
+		list.add(new PropertyHelper(MEDIA_OWNER, MEDIA_OWNER, p.getUsername(), Collections
+				.singletonList(G_PropertyTag.ID)));
+		list.add(new PropertyHelper(MEDIA_CREATED_TIME, MEDIA_CREATED_TIME, p.getCreatedTime(), G_PropertyType.DATE,
+				Collections.singletonList(G_PropertyTag.DATE)));
+		list.add(new PropertyHelper(MEDIA_CAPTION_TEXT, MEDIA_CAPTION_TEXT, p.getCaptionText(), Collections
+				.singletonList(G_PropertyTag.TEXT)));
+		list.add(new PropertyHelper(MEDIA_LIKE_COUNT, MEDIA_LIKE_COUNT, p.getLikes().getCount(), G_PropertyType.LONG,
+				Collections.singletonList(G_PropertyTag.STAT)));
+		list.add(new PropertyHelper(MEDIA_COMMENT_COUNT, MEDIA_COMMENT_COUNT, p.getComments().getCount(),
+				G_PropertyType.LONG, Collections.singletonList(G_PropertyTag.STAT)));
+		list.add(new PropertyHelper(MEDIA_THUMBNAIL, MEDIA_THUMBNAIL, p.getThumbnail(), Collections
+				.singletonList(G_PropertyTag.LINKED_DATA)));
+		list.add(new PropertyHelper(MEDIA_LOCATION_LATLON, MEDIA_LOCATION_LATLON, p.getLocation().getLatitude() + ", "
+				+ p.getLocation().getLongitude(), Collections.singletonList(G_PropertyTag.GEO)));
+		list.add(new PropertyHelper(MEDIA_LOCATION_NAME, MEDIA_LOCATION_NAME, p.getLocation().getName(), Collections
+				.singletonList(G_PropertyTag.GEO)));
+
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_LABEL)
+		// .setKey(MEDIA_LABEL)
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(getReportLabel(p)).setType(G_PropertyType.STRING)
+		// .build()).build());
+		// list.add(G_Property.newBuilder().setFriendlyText(MEDIA_ID).setKey(MEDIA_ID)
+		// .setRange(G_SingletonRange.newBuilder().setValue(p.getId()).setType(G_PropertyType.STRING).build())
+		// .build());
+		//
+		// list.add(G_Property.newBuilder().setFriendlyText(MEDIA_LINK).setKey(MEDIA_LINK)
+		// .setRange(G_SingletonRange.newBuilder().setValue(p.getLink()).setType(G_PropertyType.STRING).build())
+		// .build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_OWNER)
+		// .setKey(MEDIA_OWNER)
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getUsername()).setType(G_PropertyType.STRING).build())
+		// .build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_CREATED_TIME)
+		// .setKey(MEDIA_CREATED_TIME)
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getCreatedTime()).setType(G_PropertyType.DATE).build())
+		// .build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_CAPTION_TEXT)
+		// .setKey(MEDIA_CAPTION_TEXT)
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getCaptionText()).setType(G_PropertyType.STRING)
+		// .build()).build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_LIKE_COUNT)
+		// .setKey(MEDIA_LIKE_COUNT)
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getLikes().getCount()).setType(G_PropertyType.LONG)
+		// .build()).build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_COMMENT_COUNT)
+		// .setKey(MEDIA_COMMENT_COUNT)
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getComments().getCount()).setType(G_PropertyType.LONG)
+		// .build()).build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_THUMBNAIL)
+		// .setKey(MEDIA_THUMBNAIL)
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getThumbnail()).setType(G_PropertyType.STRING).build())
+		// .build());
+		//
+		// if ((p.getLocation().getLatitude() != null) &&
+		// (p.getLocation().getLongitude() != null)) {
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_LOCATION_LATLON)
+		// .setKey(MEDIA_LOCATION_LATLON)
+		// .setRange(
+		// G_SingletonRange.newBuilder()
+		// .setValue(p.getLocation().getLatitude() + ", " +
+		// p.getLocation().getLongitude())
+		// .setType(G_PropertyType.GEO).build()).build());
+		//
+		// }
+		//
+		// if (ValidationUtils.isValid(p.getLocation().getName())) {
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText(MEDIA_LOCATION_NAME)
+		// .setKey(MEDIA_LOCATION_NAME)
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getLocation().getName())
+		// .setType(G_PropertyType.STRING).build()).build());
+		// }
+		//
+		// // FIXME: using literal strings instead of strings defined in
+		// // AbstractDocumentParser
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText("ATS_IN_CAPTION")
+		// .setKey("ATS_IN_CAPTION")
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getAtsInCaption()).setType(G_PropertyType.OTHER)
+		// .build()).build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText("ATS_IN_COMMENTS")
+		// .setKey("ATS_IN_COMMENTS")
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getAtsInComments()).setType(G_PropertyType.OTHER)
+		// .build()).build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText("HASHTAGS_IN_CAPTION")
+		// .setKey("HASHTAGS_IN_CAPTION")
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getHashTagsInCaption()).setType(G_PropertyType.OTHER)
+		// .build()).build());
+		// list.add(G_Property
+		// .newBuilder()
+		// .setFriendlyText("HASHTAGS_IN_COMMENTS")
+		// .setKey("HASHTAGS_IN_COMMENTS")
+		// .setRange(
+		// G_SingletonRange.newBuilder().setValue(p.getHashTagsInComments()).setType(G_PropertyType.OTHER)
+		// .build()).build());
+		final List<G_EntityTag> tags = new ArrayList<G_EntityTag>();
+		tags.add(G_EntityTag.FILE);
+		final EntityHelper entity = new EntityHelper(getReportId(p), tags, null, null, list);
+		return entity;
+		// return list;
 	}
 
 	@Override
@@ -51,15 +201,19 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 		return "MEDIA";
 	}
 
+	@Override
+	public V_GenericGraph getSubGraph(final JsonNode sr, final G_EntityQuery q) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	// This method creates a sub graph of the nodes inside a report, and a list
 	// of new identifiers to search on.
 	@Override
 	public boolean parse(final G_SearchResult sr, final G_EntityQuery q) {
-		if (!(sr.getResult() instanceof Media)) {
-			return false;
-		}
-		final Media p = (Media) sr.getResult();
-
+		final G_Entity entity = (G_Entity) sr.getResult();
+		final Media p = (Media) PropertyHelper.getSingletonValueByKey(entity.getProperties(), DTO);
+		// final Media p = getClassFromJSON(sr, Media.class);s
 		// Make nodes dealing with the report itself.
 		if (ValidationUtils.isValid(p)) {
 
@@ -69,22 +223,20 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 			if (phgb.isPreviouslyScannedResult(reportId)) {
 				return false;
 			}
-			buildEntityFromDocument(sr, q);
-			p.getAdditionalProperties().get(G_Parser.SCORE);
 
 			phgb.addScannedResult(reportId);
 			// report node does not attach to anything.
 			final V_GenericNode reportNode = phgb.createOrUpdateNode(reportId, G_CanonicalPropertyType.MEDIA.name(),
 					G_CanonicalPropertyType.MEDIA.name(), null, null, null);
-			reportNode.setLabel((String) p.getAdditionalProperties().get(MEDIA_LABEL));
-			reportNode.addData("Type", (String) p.getAdditionalProperties().get(REPORT_TYPE));
+			// reportNode.setLabel((String)
+			// p.getAdditionalProperties().get(MEDIA_LABEL));
+			// reportNode.addData("Type", (String)
+			// p.getAdditionalProperties().get(REPORT_TYPE));
+			final String reportLink = "<a href=\"" + p.getLink() + "\" class=\"btn btn-primary\" target=\"" + p.getId()
+					+ "\" >" + p.getId() + "</a>";
 
-			// reportNode.addData(reportLinkTitle,
-			// getReportViewerLink("BSARReport", reportId));
-			reportNode.addData(reportLinkTitle, "<a href=\"" + p.getLink() + "\" class=\"btn btn-primary\" target=\""
-					+ p.getId() + "\" >" + p.getId() + "</a>");
-
-//			phgb.addReportDetails(reportNode, p.getAdditionalProperties());
+			// final G_Entity entity = buildEntityFromDocument(sr, q);
+			phgb.addReportDetails(reportNode, entity.getProperties(), reportLinkTitle, reportLink);
 
 			phgb.addGraphQueryPath(reportNode, q);
 
@@ -143,137 +295,5 @@ public class MediaGraphParser extends AbstractDocumentGraphParser<Media> {
 		}
 
 		return true;
-	}
-
-	@Override
-	public Collection<? extends G_Property> populateSearchResult(final G_SearchResult sr, final G_EntityQuery sq) {
-		
-		final List<G_Property> list = new ArrayList<G_Property>();
-		final Media p = (Media) sr.getResult();
-		
-		list.add(new PropertyHelper(MEDIA_LABEL, MEDIA_LABEL, getReportLabel(p), Collections.singletonList(G_PropertyTag.LABEL)));
-		list.add(new PropertyHelper(MEDIA_ID, MEDIA_ID, p.getId(), Collections.singletonList(G_PropertyTag.ID)));
-		list.add(new PropertyHelper(MEDIA_LINK, MEDIA_LINK, p.getLink(), Collections.singletonList(G_PropertyTag.LINKED_DATA)));
-		list.add(new PropertyHelper(MEDIA_OWNER, MEDIA_OWNER, p.getUsername(), Collections.singletonList(G_PropertyTag.ID)));
-		list.add(new PropertyHelper(MEDIA_CREATED_TIME, MEDIA_CREATED_TIME, p.getCreatedTime(), G_PropertyType.DATE, Collections.singletonList(G_PropertyTag.DATE)));
-		list.add(new PropertyHelper(MEDIA_CAPTION_TEXT, MEDIA_CAPTION_TEXT, p.getCaptionText(), Collections.singletonList(G_PropertyTag.TEXT)));
-		list.add(new PropertyHelper(MEDIA_LIKE_COUNT, MEDIA_LIKE_COUNT, p.getLikes().getCount(), G_PropertyType.LONG, Collections.singletonList(G_PropertyTag.STAT)));
-		list.add(new PropertyHelper(MEDIA_COMMENT_COUNT, MEDIA_COMMENT_COUNT, p.getComments().getCount(), G_PropertyType.LONG, Collections.singletonList(G_PropertyTag.STAT)));
-		list.add(new PropertyHelper(MEDIA_THUMBNAIL, MEDIA_THUMBNAIL, p.getThumbnail(), Collections.singletonList(G_PropertyTag.LINKED_DATA)));
-		list.add(new PropertyHelper(MEDIA_LOCATION_LATLON, MEDIA_LOCATION_LATLON, p.getLocation().getLatitude() + ", " + p.getLocation().getLongitude(), Collections.singletonList(G_PropertyTag.GEO)));
-		list.add(new PropertyHelper(MEDIA_LOCATION_NAME, MEDIA_LOCATION_NAME, p.getLocation().getName(), Collections.singletonList(G_PropertyTag.GEO)));
-		
-		
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText(MEDIA_LABEL)
-//				.setKey(MEDIA_LABEL)
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(getReportLabel(p)).setType(G_PropertyType.STRING)
-//								.build()).build());
-//		list.add(G_Property.newBuilder().setFriendlyText(MEDIA_ID).setKey(MEDIA_ID)
-//				.setRange(G_SingletonRange.newBuilder().setValue(p.getId()).setType(G_PropertyType.STRING).build())
-//				.build());
-//
-//		list.add(G_Property.newBuilder().setFriendlyText(MEDIA_LINK).setKey(MEDIA_LINK)
-//				.setRange(G_SingletonRange.newBuilder().setValue(p.getLink()).setType(G_PropertyType.STRING).build())
-//				.build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText(MEDIA_OWNER)
-//				.setKey(MEDIA_OWNER)
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getUsername()).setType(G_PropertyType.STRING).build())
-//				.build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText(MEDIA_CREATED_TIME)
-//				.setKey(MEDIA_CREATED_TIME)
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getCreatedTime()).setType(G_PropertyType.DATE).build())
-//				.build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText(MEDIA_CAPTION_TEXT)
-//				.setKey(MEDIA_CAPTION_TEXT)
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getCaptionText()).setType(G_PropertyType.STRING)
-//								.build()).build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText(MEDIA_LIKE_COUNT)
-//				.setKey(MEDIA_LIKE_COUNT)
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getLikes().getCount()).setType(G_PropertyType.LONG)
-//								.build()).build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText(MEDIA_COMMENT_COUNT)
-//				.setKey(MEDIA_COMMENT_COUNT)
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getComments().getCount()).setType(G_PropertyType.LONG)
-//								.build()).build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText(MEDIA_THUMBNAIL)
-//				.setKey(MEDIA_THUMBNAIL)
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getThumbnail()).setType(G_PropertyType.STRING).build())
-//				.build());
-//
-//		if ((p.getLocation().getLatitude() != null) && (p.getLocation().getLongitude() != null)) {
-//			list.add(G_Property
-//					.newBuilder()
-//					.setFriendlyText(MEDIA_LOCATION_LATLON)
-//					.setKey(MEDIA_LOCATION_LATLON)
-//					.setRange(
-//							G_SingletonRange.newBuilder()
-//									.setValue(p.getLocation().getLatitude() + ", " + p.getLocation().getLongitude())
-//									.setType(G_PropertyType.GEO).build()).build());
-//
-//		}
-//
-//		if (ValidationUtils.isValid(p.getLocation().getName())) {
-//			list.add(G_Property
-//					.newBuilder()
-//					.setFriendlyText(MEDIA_LOCATION_NAME)
-//					.setKey(MEDIA_LOCATION_NAME)
-//					.setRange(
-//							G_SingletonRange.newBuilder().setValue(p.getLocation().getName())
-//									.setType(G_PropertyType.STRING).build()).build());
-//		}
-//
-//		// FIXME: using literal strings instead of strings defined in
-//		// AbstractDocumentParser
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText("ATS_IN_CAPTION")
-//				.setKey("ATS_IN_CAPTION")
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getAtsInCaption()).setType(G_PropertyType.OTHER)
-//								.build()).build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText("ATS_IN_COMMENTS")
-//				.setKey("ATS_IN_COMMENTS")
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getAtsInComments()).setType(G_PropertyType.OTHER)
-//								.build()).build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText("HASHTAGS_IN_CAPTION")
-//				.setKey("HASHTAGS_IN_CAPTION")
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getHashTagsInCaption()).setType(G_PropertyType.OTHER)
-//								.build()).build());
-//		list.add(G_Property
-//				.newBuilder()
-//				.setFriendlyText("HASHTAGS_IN_COMMENTS")
-//				.setKey("HASHTAGS_IN_COMMENTS")
-//				.setRange(
-//						G_SingletonRange.newBuilder().setValue(p.getHashTagsInComments()).setType(G_PropertyType.OTHER)
-//								.build()).build());
-
-		return list;
 	}
 }
