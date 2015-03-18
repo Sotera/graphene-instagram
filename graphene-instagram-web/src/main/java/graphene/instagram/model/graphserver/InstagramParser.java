@@ -1,11 +1,11 @@
 package graphene.instagram.model.graphserver;
 
+import graphene.dao.HyperGraphBuilder;
 import graphene.dao.IconService;
 import graphene.dao.es.impl.BasicParserESImpl;
 import graphene.hts.entityextraction.Extractor;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_SymbolConstants;
-import graphene.services.HyperGraphBuilder;
 import graphene.services.PropertyHyperGraphBuilder;
 import graphene.util.StringUtils;
 import graphene.util.Triple;
@@ -270,15 +270,15 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 		return extractors;
 	}
 
+	public abstract String getIdFromDoc(T p);
+
 	@Override
 	public HyperGraphBuilder<Object> getPhgb() {
 		return phgb;
 	}
 
-	public abstract String getReportId(T p);
-
 	public String getReportLabel(final T p) {
-		return StringUtils.coalesc(" ", getReportType(), getReportId(p));
+		return StringUtils.coalesc(" ", getReportType(), getIdFromDoc(p));
 	}
 
 	public String getReportLinkTitle() {

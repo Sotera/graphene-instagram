@@ -5,12 +5,12 @@ import graphene.dao.DataSourceListDAO;
 import graphene.dao.G_Parser;
 import graphene.dao.LoggingDAO;
 import graphene.dao.StyleService;
+import graphene.model.idl.G_Constraint;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_Property;
 import graphene.model.idl.G_SearchResult;
 import graphene.model.idl.G_SearchResults;
-import graphene.model.idl.G_SearchType;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.model.idl.G_User;
 import graphene.model.idl.G_UserDataAccess;
@@ -235,7 +235,7 @@ public class SearchResultsView {
 
 	public Link getAddressPivotLink(final String term) {
 		// XXX: pick the right search type based on the link value
-		final Link l = searchPage.set(null, null, G_SearchType.COMPARE_EQUALS.name(), term, defaultMaxResults);
+		final Link l = searchPage.set(null, null, G_Constraint.COMPARE_EQUALS.name(), term, defaultMaxResults);
 		return l;
 	}
 
@@ -276,18 +276,17 @@ public class SearchResultsView {
 	 */
 	private G_SearchResults getEntities(final String schema, final String subType, final String matchType,
 			final String value, final int maxResults) {
-		logger.debug("=========================================================IN FINCEN doing FINCEN STUFF");
 		G_SearchResults metaresults = null;
 		if (ValidationUtils.isValid(value)) {
-			G_SearchType g_SearchType = null;
+			G_Constraint G_Constraint = null;
 			if (ValidationUtils.isValid(matchType)) {
 				try {
-					g_SearchType = G_SearchType.valueOf(matchType);
+					G_Constraint = graphene.model.idl.G_Constraint.valueOf(matchType);
 				} catch (final Exception e) {
-					g_SearchType = G_SearchType.COMPARE_CONTAINS;
+					G_Constraint = graphene.model.idl.G_Constraint.COMPARE_CONTAINS;
 				}
 			} else {
-				g_SearchType = G_SearchType.COMPARE_CONTAINS;
+				G_Constraint = graphene.model.idl.G_Constraint.COMPARE_CONTAINS;
 			}
 
 			final List<String> filters = new ArrayList<String>();
@@ -296,7 +295,7 @@ public class SearchResultsView {
 			}
 
 			try {
-				final G_EntityQuery sq = new QueryHelper(value, g_SearchType, filters, maxResults, schema);// queryBuilder.build();
+				final G_EntityQuery sq = new QueryHelper(value, G_Constraint, filters, maxResults, schema);// queryBuilder.build();
 				if (isUserExists()) {
 					sq.setUserId(getUser().getId());
 					sq.setUsername(getUser().getUsername());
@@ -441,7 +440,7 @@ public class SearchResultsView {
 
 	public Link getNamePivotLink(final String term) {
 		// XXX: pick the right search type based on the link value
-		final Link l = searchPage.set(null, null, G_SearchType.COMPARE_EQUALS.name(), term, defaultMaxResults);
+		final Link l = searchPage.set(null, null, G_Constraint.COMPARE_EQUALS.name(), term, defaultMaxResults);
 		return l;
 	}
 
@@ -500,7 +499,7 @@ public class SearchResultsView {
 	}
 
 	public Link getPivotLink(final String term) {
-		final Link l = searchPage.set(null, null, G_SearchType.COMPARE_CONTAINS.name(), term, defaultMaxResults);
+		final Link l = searchPage.set(null, null, G_Constraint.COMPARE_CONTAINS.name(), term, defaultMaxResults);
 		return l;
 	}
 

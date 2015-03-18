@@ -1,7 +1,7 @@
 package graphene.instagram.web.pages;
 
 import graphene.business.commons.exception.DataAccessException;
-import graphene.model.idl.G_SearchType;
+import graphene.model.idl.G_Constraint;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.model.idl.G_VisualType;
 import graphene.util.validator.ValidationUtils;
@@ -62,10 +62,10 @@ public class EntityExtraction extends SimpleBasePage {
 
 	@InjectComponent
 	private Zone extractionZone;
-	
+
 	@InjectPage
 	private CombinedEntitySearchPage searchPage;
-	
+
 	@Inject
 	@Symbol(G_SymbolConstants.DEFAULT_MAX_SEARCH_RESULTS)
 	private Integer defaultMaxResults;
@@ -73,6 +73,12 @@ public class EntityExtraction extends SimpleBasePage {
 	@OnEvent(value = "cancel")
 	void cancel() {
 		textAreaValue = null;
+	}
+
+	public Link getNamePivotLink(final String term) {
+		// XXX: pick the right search type based on the link value
+		final Link l = searchPage.set(null, "media", G_Constraint.COMPARE_EQUALS.name(), term, defaultMaxResults);
+		return l;
 	}
 
 	public String getNumberOfEntitiesExtracted() {
@@ -110,12 +116,6 @@ public class EntityExtraction extends SimpleBasePage {
 		}
 		return style;
 	}
-	
-	public Link getNamePivotLink(final String term) {
-		// XXX: pick the right search type based on the link value
-		final Link l = searchPage.set(null, "media", G_SearchType.COMPARE_EQUALS.name(), term, defaultMaxResults);
-		return l;
-	}
 
 	Object onFailureFromAugmentTextForm() {
 		r = null;
@@ -132,12 +132,10 @@ public class EntityExtraction extends SimpleBasePage {
 				r = dao.augment(textAreaValue);
 				logger.debug("Set value to " + textReturnValue);
 			} catch (final DataAccessException e) {
-				alertManager.alert(Duration.SINGLE, Severity.ERROR,
-						e.getMessage());
+				alertManager.alert(Duration.SINGLE, Severity.ERROR, e.getMessage());
 			}
 		} else {
-			alertManager.alert(Duration.SINGLE, Severity.INFO,
-					"Please enter text to extract entities from.");
+			alertManager.alert(Duration.SINGLE, Severity.INFO, "Please enter text to extract entities from.");
 		}
 		return request.isXHR() ? extractionZone.getBody() : null;
 	}

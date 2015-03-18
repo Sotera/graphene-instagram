@@ -3,9 +3,12 @@ package graphene.instagram.dao.impl;
 import graphene.dao.IconService;
 import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_ListRange;
+import graphene.model.idl.G_Property;
 import graphene.model.idl.G_PropertyMatchDescriptor;
+import graphene.model.idl.G_PropertyTag;
 import graphene.model.idl.G_PropertyType;
 import graphene.model.idl.G_SingletonRange;
+import graphene.model.idlhelper.PropertyHelper;
 import graphene.util.Tuple;
 import graphene.util.validator.ValidationUtils;
 
@@ -50,18 +53,20 @@ public class IconServiceImpl implements IconService {
 	public List<Object> getIconsForText(final String text, final G_EntityQuery sq) {
 		final ArrayList<String> otherKeys = new ArrayList<String>();
 		final List<G_PropertyMatchDescriptor> propertyMatchDescriptors = sq.getPropertyMatchDescriptors();
-		for (final G_PropertyMatchDescriptor p : propertyMatchDescriptors) {
-			final Object range = p.getRange();
-			if (range instanceof G_SingletonRange) {
-				final G_SingletonRange s = ((G_SingletonRange) range);
-				if (s.getType().equals(G_PropertyType.STRING)) {
-					otherKeys.add((String) s.getValue());
-				}
-			} else if (range instanceof G_ListRange) {
-				final G_ListRange lr = (G_ListRange) range;
-				if (lr.getType().equals(G_PropertyType.STRING)) {
-					for (final Object i : lr.getValues()) {
-						otherKeys.add((String) i);
+		if (ValidationUtils.isValid(propertyMatchDescriptors)) {
+			for (final G_PropertyMatchDescriptor p : propertyMatchDescriptors) {
+				final Object range = p.getRange();
+				if (range instanceof G_SingletonRange) {
+					final G_SingletonRange s = ((G_SingletonRange) range);
+					if (s.getType().equals(G_PropertyType.STRING)) {
+						otherKeys.add((String) s.getValue());
+					}
+				} else if (range instanceof G_ListRange) {
+					final G_ListRange lr = (G_ListRange) range;
+					if (lr.getType().equals(G_PropertyType.STRING)) {
+						for (final Object i : lr.getValues()) {
+							otherKeys.add((String) i);
+						}
 					}
 				}
 			}
@@ -70,15 +75,16 @@ public class IconServiceImpl implements IconService {
 	}
 
 	@Override
-	public Collection<Tuple<String, String>> getIconsForText(final String text, final String... otherKeys) {
-		final Collection<Tuple<String, String>> icons = new ArrayList<Tuple<String, String>>();
+	public Collection<G_Property> getIconsForText(final String text, final String... otherKeys) {
+		final Collection<G_Property> icons = new ArrayList<G_Property>();
 		try {
 			if (ValidationUtils.isValid(text, otherKeys)) {
 				Matcher m;
 				for (final Pattern i : iconMap.keySet()) {
 					m = i.matcher(text);
 					if (m.find()) {
-						icons.add(iconMap.get(i));
+						icons.add(new PropertyHelper(iconMap.get(i).getFirst(), iconMap.get(i).getSecond(),
+								G_PropertyTag.IMAGE));
 					}
 					m.reset();
 				}
@@ -86,7 +92,8 @@ public class IconServiceImpl implements IconService {
 				for (final String o : otherKeys) {
 					m2 = Pattern.compile(o, Pattern.CASE_INSENSITIVE).matcher(text);
 					if (m2.find()) {
-						icons.add(new Tuple<String, String>("fa fa-asterisk", "Search term appeared in text"));
+						icons.add(new PropertyHelper("fa fa-asterisk", "Search term appeared in text",
+								G_PropertyTag.IMAGE));
 					}
 					m2.reset();
 				}
@@ -98,8 +105,8 @@ public class IconServiceImpl implements IconService {
 	}
 
 	@Override
-	public Collection<Tuple<String, String>> getIconsForTextWithCount(final String text, final String... otherKeys) {
-		final Collection<Tuple<String, String>> icons = new ArrayList<Tuple<String, String>>();
+	public Collection<G_Property> getIconsForTextWithCount(final String text, final String... otherKeys) {
+		final Collection<G_Property> icons = new ArrayList<G_Property>();
 		if (ValidationUtils.isValid(text, otherKeys)) {
 			Matcher m;
 
@@ -110,8 +117,8 @@ public class IconServiceImpl implements IconService {
 					count++;
 				}
 				if (count > 0) {
-					final Tuple<String, String> t = new Tuple<String, String>(iconPatternMap.get(i), "" + count);
-					icons.add(t);
+					icons.add(new PropertyHelper(iconMap.get(i).getFirst(), iconMap.get(i).getSecond() + " (" + count
+							+ ")", G_PropertyTag.IMAGE));
 				}
 				m.reset();
 			}
@@ -124,29 +131,15 @@ public class IconServiceImpl implements IconService {
 					count++;
 				}
 				if (count > 0) {
-					final Tuple<String, String> t = new Tuple<String, String>("fa fa-asterisk", "" + count);
-					icons.add(t);
+					icons.add(new PropertyHelper("fa fa-asterisk", "Search term appeared in text (" + count + ")",
+							G_PropertyTag.IMAGE));
+
 				}
 				m2.reset();
 			}
 		}
 		return icons;
 	}
-
-	/**
-	 * Taken from stackoverflow 5719833
-	 */
-	// @Override
-	// public Collection<String> getIconsForKeys(String... keys) {
-	// Collection<String> fromCollection = Collections2.filter(
-	// Arrays.asList(keys), Predicates.in(iconMap.keySet()));
-	// Function<? super Object, String> function = (Function<? super Object,
-	// String>) Functions
-	// .forMap(iconMap);
-	// Collection<String> values = Collections2.transform(fromCollection,
-	// function);
-	// return values;
-	// }
 
 	@Override
 	public void removePattern(final String pattern, final boolean caseSensitive) {
@@ -160,7 +153,6 @@ public class IconServiceImpl implements IconService {
 				}
 				iconPatternMap.remove(p);
 			} catch (final Exception e) {
-				e.printStackTrace();
 				logger.error(e.getMessage());
 			}
 		}

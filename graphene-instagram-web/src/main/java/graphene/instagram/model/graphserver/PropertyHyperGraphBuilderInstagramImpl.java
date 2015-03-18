@@ -1,18 +1,17 @@
 package graphene.instagram.model.graphserver;
 
-import graphene.business.commons.DocumentError;
-import graphene.dao.CombinedDAO;
 import graphene.dao.DocumentBuilder;
 import graphene.dao.G_Parser;
-import graphene.dao.GenericDAO;
-import graphene.instagram.dao.GraphTraversalRuleService;
+import graphene.dao.GraphTraversalRuleService;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_CanonicalRelationshipType;
+import graphene.model.idl.G_DataAccess;
+import graphene.model.idl.G_DocumentError;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_IdType;
+import graphene.model.idl.G_PropertyMatchDescriptor;
 import graphene.model.idl.G_SearchResult;
-import graphene.model.idl.G_SearchTuple;
 import graphene.model.idlhelper.PropertyHelper;
 import graphene.services.PropertyHyperGraphBuilder;
 import graphene.util.DataFormatConstants;
@@ -25,12 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import mil.darpa.vande.generic.V_EdgeList;
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericNode;
 import mil.darpa.vande.generic.V_GraphQuery;
 import mil.darpa.vande.generic.V_LegendItem;
-import mil.darpa.vande.generic.V_NodeList;
 
 import org.apache.tapestry5.alerts.Severity;
 import org.apache.tapestry5.ioc.annotations.Inject;
@@ -54,7 +51,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	protected HashMap<G_CanonicalPropertyType, String> colorMap = new HashMap<G_CanonicalPropertyType, String>();
 
 	@Inject
-	private CombinedDAO combinedDAO;
+	private G_DataAccess combinedDAO;
 
 	private ArrayList<String> listOfTypesToAlwaysKeep;
 
@@ -95,7 +92,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 			if (determineTraversability(n)) {
 
 				for (final G_EntityQuery eq : createQueriesFromNode(n)) {
-					final String queryToString = (String) eq.getAttributeList().get(0).getValue();
+					final String queryToString = (String) eq.getPropertyMatchDescriptors().get(0).getValue();
 					// Have we done this EXACT query before?
 					if (!scannedQueries.contains(queryToString)) {
 
@@ -143,25 +140,6 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	}
 
 	@Override
-	public boolean callBack(final G_SearchResult t, final G_EntityQuery q) {
-		if (ValidationUtils.isValid(t.getResult())) {
-			final G_Entity entity = (G_Entity) t.getResult();
-			final String type = (String) PropertyHelper.getSingletonValue(entity.getProperties().get(
-					G_Parser.REPORT_TYPE));
-
-			final G_Parser parser = db.getParserForObject(type);
-			if (parser != null) {
-				return parser.parse(t, q);
-			} else {
-				logger.warn("No parser was found for the supplied type, but carrying on.");
-				return true;
-			}
-		} else {
-			return false;
-		}
-	}
-
-	@Override
 	public V_GenericNode createOrUpdateNode(final double minimumScoreRequired, final double inheritedScore,
 			final double localPriority, final String originalId, final String idType, final String nodeType,
 			final V_GenericNode attachTo, final String relationType, final String relationValue,
@@ -170,11 +148,11 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 
 		if (ValidationUtils.isValid(originalId)) {
 			if (!stopwordService.isValid(originalId)) {
-				addError(new DocumentError("Bad Identifier", "The " + nodeType + " (" + originalId
-						+ ") contains a stopword", Severity.WARN));
+				addError(new G_DocumentError("Bad Identifier", "The " + nodeType + " (" + originalId
+						+ ") contains a stopword", Severity.WARN.toString()));
 			} else {
 				final String id = generateNodeId(originalId);
-				a = nodeList.getNode(id);
+				a = nodeList.get(id);
 				final double calculatedPriority = inheritedScore * localPriority;
 				if (a == null) {
 					a = new V_GenericNode(id);
@@ -190,15 +168,15 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 					a.setLabel(StringUtils.removeLeadingZeros(originalId));
 					// XXX: need a way of getting the link to the page with TYPE
 					a.addData(nodeType, getCombinedSearchLink(nodeType, originalId));
-					nodeList.addNode(a);
+					nodeList.put(a.getId(), a);
 					legendItems.add(new V_LegendItem(a.getColor(), a.getNodeType()));
 				}
 				// now we have a valid node. Attach it to the other node
 				// provided.
 				if (ValidationUtils.isValid(attachTo)) {
 					final String key = generateEdgeId(attachTo.getId(), relationType, a.getId());
-					if ((key != null) && !edgeMap.containsKey(key)) {
-						final V_GenericEdge edge = new V_GenericEdge(a, attachTo);
+					if ((key != null) && !edgeList.containsKey(key)) {
+						final V_GenericEdge edge = new V_GenericEdge(key, a, attachTo);
 						edge.setIdType(relationType);
 						edge.setLabel(null);
 						edge.setIdVal(relationType);
@@ -250,16 +228,16 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	private List<G_EntityQuery> createQueriesFromNode(final V_GenericNode n) {
 		final List<G_EntityQuery> list = new ArrayList<G_EntityQuery>(2);
 
-		final G_SearchTuple<String> tuple = new G_SearchTuple<>();
+		final G_PropertyMatchDescriptor tuple = new G_PropertyMatchDescriptor();
 		tuple.setValue(n.getIdVal());
-		tuple.setSearchType(ruleService.getRule(n.getIdType()));
+		tuple.setConstraint(ruleService.getRule(n.getIdType()));
 		final G_IdType type = new G_IdType();
 		type.setName(n.getNodeType());
 		tuple.setNodeType(type);
-		final List<G_SearchTuple> tuples = new ArrayList<G_SearchTuple>();
+		final List<G_PropertyMatchDescriptor> tuples = new ArrayList<G_PropertyMatchDescriptor>();
 		tuples.add(tuple);
-		final G_EntityQuery eq = G_EntityQuery.newBuilder().setAttributeList(tuples).setMaxResult(MAX_RESULTS)
-				.setMinimumScore(n.getMinScore()).setInitiatorId(n.getId()).build();
+		final G_EntityQuery eq = G_EntityQuery.newBuilder().setPropertyMatchDescriptors(tuples)
+				.setMaxResult(MAX_RESULTS).setMinimumScore(n.getMinScore()).setInitiatorId(n.getId()).build();
 		list.add(eq);
 
 		return list;
@@ -276,6 +254,25 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 			}
 		} else {
 			logger.warn("An invalid node was provided, and determineTraversability will return false.");
+			return false;
+		}
+	}
+
+	@Override
+	public boolean execute(final G_SearchResult t, final G_EntityQuery q) {
+		if (ValidationUtils.isValid(t.getResult())) {
+			final G_Entity entity = (G_Entity) t.getResult();
+			final String type = (String) PropertyHelper.getSingletonValue(entity.getProperties().get(
+					G_Parser.REPORT_TYPE));
+
+			final G_Parser parser = db.getParserForObject(type);
+			if (parser != null) {
+				return parser.parse(t, q);
+			} else {
+				logger.warn("No parser was found for the supplied type, but carrying on.");
+				return true;
+			}
+		} else {
 			return false;
 		}
 	}

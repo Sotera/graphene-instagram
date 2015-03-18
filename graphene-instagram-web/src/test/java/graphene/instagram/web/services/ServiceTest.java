@@ -1,8 +1,8 @@
 package graphene.instagram.web.services;
 
+import graphene.dao.HyperGraphBuilder;
 import graphene.dao.es.ESRestAPIConnection;
 import graphene.dao.es.JestModule;
-import graphene.services.HyperGraphBuilder;
 import graphene.util.db.DBConnectionPoolService;
 import io.searchbox.client.JestClient;
 import mil.darpa.vande.generic.V_GenericEdge;

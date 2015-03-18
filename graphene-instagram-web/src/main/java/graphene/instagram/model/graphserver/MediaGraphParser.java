@@ -182,7 +182,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		// .build()).build());
 		final List<G_EntityTag> tags = new ArrayList<G_EntityTag>();
 		tags.add(G_EntityTag.FILE);
-		final EntityHelper entity = new EntityHelper(getReportId(p), tags, null, null, map);
+		final EntityHelper entity = new EntityHelper(getIdFromDoc(p), tags, null, null, map);
 		return entity;
 		// return list;
 	}
@@ -197,8 +197,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 	}
 
 	@Override
-	public String getReportId(final Media p) {
-		// return p.getDETAILS().getCurrentBsaIdentifier().toString();
+	public String getIdFromDoc(final Media p) {
 		return p.getId();
 	}
 
