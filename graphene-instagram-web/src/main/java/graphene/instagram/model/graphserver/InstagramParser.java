@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,8 +64,6 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 	public static final String HASHTAGS_IN_COMMENTS = "hashtagsincomments";
 	public static final String HASHTAGS_IN_CAPTION = "hashtagsincaption";
 	public static final String ALL_HASHTAGS = "allhashtags";
-	
-	
 
 	/**
 	 * You require the query generated from this object to have a low priority
@@ -275,15 +272,15 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 		return extractors;
 	}
 
+	public abstract String getIdFromDoc(T p);
+
 	@Override
 	public HyperGraphBuilder<Object> getPhgb() {
 		return phgb;
 	}
 
-	public abstract String getReportId(T p);
-
 	public String getReportLabel(final T p) {
-		return StringUtils.coalesc(" ", getReportType(), getReportId(p));
+		return StringUtils.coalesc(" ", getReportType(), getIdFromDoc(p));
 	}
 
 	public String getReportLinkTitle() {
