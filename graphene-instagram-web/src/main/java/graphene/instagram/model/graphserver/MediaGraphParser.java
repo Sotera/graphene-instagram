@@ -207,7 +207,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 	}
 
 	@Override
-	public V_GenericGraph getSubGraph(final JsonNode sr, final G_EntityQuery q) {
+	public V_GenericGraph getSubGraph(final G_SearchResult sr, final G_EntityQuery q) {
 		// TODO Auto-generated method stub
 		return null;
 	}

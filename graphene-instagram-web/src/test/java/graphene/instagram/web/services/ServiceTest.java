@@ -28,10 +28,10 @@ public class ServiceTest {
 
 	protected void printGraph(final V_GenericGraph g) {
 		System.out.println("=====================");
-		for (final V_GenericNode x : g.getNodes()) {
+		for (final V_GenericNode x : g.getNodes().values()) {
 			System.out.println(x);
 		}
-		for (final V_GenericEdge x : g.getEdges()) {
+		for (final V_GenericEdge x : g.getEdges().values()) {
 			System.out.println(x);
 		}
 		System.out.println("=====================");

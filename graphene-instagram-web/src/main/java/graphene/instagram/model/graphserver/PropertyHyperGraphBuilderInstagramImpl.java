@@ -9,10 +9,12 @@ import graphene.model.idl.G_DataAccess;
 import graphene.model.idl.G_DocumentError;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
-import graphene.model.idl.G_IdType;
-import graphene.model.idl.G_PropertyMatchDescriptor;
+import graphene.model.idl.G_PropertyType;
 import graphene.model.idl.G_SearchResult;
 import graphene.model.idlhelper.PropertyHelper;
+import graphene.model.idlhelper.PropertyMatchDescriptorHelper;
+import graphene.model.idlhelper.QueryHelper;
+import graphene.model.idlhelper.SingletonRangeHelper;
 import graphene.services.PropertyHyperGraphBuilder;
 import graphene.util.DataFormatConstants;
 import graphene.util.StringUtils;
@@ -80,63 +82,6 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 		setupNodeInheritance();
 		// linkGenerator = searchPage;
 
-	}
-
-	/**
-	 * We can build either one query per attribute, or one query per set of
-	 * related attributes, depending on the backend.
-	 */
-	@Override
-	public void buildQueryForNextIteration(final V_GenericNode... nodes) {
-		for (final V_GenericNode n : nodes) {
-			if (determineTraversability(n)) {
-
-				for (final G_EntityQuery eq : createQueriesFromNode(n)) {
-					final String queryToString = (String) eq.getPropertyMatchDescriptors().get(0).getValue();
-					// Have we done this EXACT query before?
-					if (!scannedQueries.contains(queryToString)) {
-
-						/**
-						 * TODO: Sort the queries by the score of the query that
-						 * go to them.
-						 * 
-						 * For instance, if i search for x and get a result with
-						 * a score of 0.8, then any queries I build from nodes
-						 * in that graph get a priority of 0.8 in relation to
-						 * other queries.
-						 * 
-						 * If the second result for x has a score of 0.25, then
-						 * queries generated from those nodes get a 0.25
-						 * priority.
-						 * 
-						 * 
-						 * The list should stay sorted so that the highest score
-						 * is picked for that iteration.
-						 * 
-						 * This affects how the graph is traversed.
-						 * 
-						 * We probably don't want to update the sorting after
-						 * each query, but after a certain number of queries has
-						 * been done on the current degree (possibly exhausting
-						 * the list of queries)
-						 * 
-						 * Another tune is to cull (or not create queries) for
-						 * priorities below a certain level.
-						 * 
-						 * We also need to store the score in the dotted link
-						 * edges.
-						 */
-
-						scannedQueries.add(queryToString);
-						logger.debug("Query eq is new: " + queryToString);
-						queriesToRunNextDegree.add(eq);
-					} else {
-						logger.debug("Skipping query eq! " + queryToString);
-					}
-				}
-			}
-		}
-		logger.debug("There are " + queriesToRunNextDegree.size() + " queries to run for the next degree. ref ");
 	}
 
 	@Override
@@ -225,21 +170,25 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	 * @param n
 	 * @return
 	 */
-	private List<G_EntityQuery> createQueriesFromNode(final V_GenericNode n) {
+	@Override
+	public List<G_EntityQuery> createQueriesFromNode(final V_GenericNode n) {
 		final List<G_EntityQuery> list = new ArrayList<G_EntityQuery>(2);
 
-		final G_PropertyMatchDescriptor tuple = new G_PropertyMatchDescriptor();
-		tuple.setValue(n.getIdVal());
-		tuple.setConstraint(ruleService.getRule(n.getIdType()));
-		final G_IdType type = new G_IdType();
-		type.setName(n.getNodeType());
-		tuple.setNodeType(type);
-		final List<G_PropertyMatchDescriptor> tuples = new ArrayList<G_PropertyMatchDescriptor>();
-		tuples.add(tuple);
-		final G_EntityQuery eq = G_EntityQuery.newBuilder().setPropertyMatchDescriptors(tuples)
-				.setMaxResult(MAX_RESULTS).setMinimumScore(n.getMinScore()).setInitiatorId(n.getId()).build();
-		list.add(eq);
+		final PropertyMatchDescriptorHelper pmdh = new PropertyMatchDescriptorHelper();
+		pmdh.setKey("_all");
+		pmdh.setRange(new SingletonRangeHelper(n.getIdVal(), G_PropertyType.STRING));
+		pmdh.setConstraint(ruleService.getRule(n.getIdType()));
 
+		final QueryHelper qh = new QueryHelper(pmdh);
+		// if (isUserExists()) {
+		// qh.setUserId(getUser().getId());
+		// qh.setUsername(getUser().getUsername());
+		// }
+		qh.setMinimumScore(1.0d);
+		qh.setMaxResult((long) MAX_RESULTS);
+		qh.setMinimumScore(n.getMinScore());
+		qh.setInitiatorId(n.getId());
+		list.add(qh);
 		return list;
 	}
 
@@ -278,7 +227,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	}
 
 	@Override
-	public GenericDAO getDAO() {
+	public G_DataAccess getDAO() {
 		return combinedDAO;
 	}
 

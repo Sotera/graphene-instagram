@@ -1,11 +1,11 @@
 package graphene.instagram.web.components;
 
-import graphene.dao.CombinedDAO;
 import graphene.dao.DataSourceListDAO;
 import graphene.dao.G_Parser;
 import graphene.dao.LoggingDAO;
 import graphene.dao.StyleService;
 import graphene.model.idl.G_Constraint;
+import graphene.model.idl.G_DataAccess;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_Property;
@@ -138,7 +138,7 @@ public class SearchResultsView {
 	@Property
 	private Triple<String, String, String> currentName;
 	@Inject
-	private CombinedDAO dao;
+	private G_DataAccess dao;
 	@Inject
 	private JavaScriptSupport javaScriptSupport;
 
@@ -313,7 +313,7 @@ public class SearchResultsView {
 				// userDataAccess.saveWorkspace(getUser().getId(),
 				// currentSelectedWorkspace);
 				// }
-				metaresults = dao.findByQueryWithMeta(sq);
+				metaresults = dao.findByQuery(sq);
 				final TimeReporter tr = new TimeReporter("parsing details of results", logger);
 				// populatedTableResults = new ArrayList<List<G_Property>>();
 
