@@ -1,10 +1,11 @@
 package graphene.instagram.model.graphserver;
 
+import graphene.dao.DocumentBuilder;
 import graphene.dao.G_Parser;
-import graphene.dao.GraphTraversalRuleService;
 import graphene.dao.HyperGraphBuilder;
+import graphene.instagram.dao.GraphTraversalRuleService;
 import graphene.model.idl.G_CanonicalPropertyType;
-import graphene.model.idl.G_Constraint;
+import graphene.model.idl.G_SearchType;
 
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.MappedConfiguration;
@@ -32,24 +33,24 @@ public class GraphServerModule {
 	 * @param singletons
 	 * @param media
 	 */
-	@Contribute(HyperGraphBuilder.class)
+	@Contribute(DocumentBuilder.class)
 	public static void contributeParsers(final Configuration<G_Parser> singletons,
 			@InjectService(MEDIA) final G_Parser media) {
 		singletons.add(media);
 	}
 
 	@Contribute(GraphTraversalRuleService.class)
-	public static void contributeTraversalRules(final MappedConfiguration<String, G_Constraint> rules) {
-		rules.add("default", G_Constraint.COMPARE_CONTAINS);
+	public static void contributeTraversalRules(final MappedConfiguration<String, G_SearchType> rules) {
+		rules.add("default", G_SearchType.COMPARE_CONTAINS);
 
 		// Lose rules that will use common terms
-		rules.add(G_CanonicalPropertyType.ACCOUNT.name(), G_Constraint.COMPARE_CONTAINS);
+		rules.add(G_CanonicalPropertyType.ACCOUNT.name(), G_SearchType.COMPARE_CONTAINS);
 
 		// More strict rules that will use match
-		rules.add(G_CanonicalPropertyType.ADDRESS.name(), G_Constraint.COMPARE_EQUALS);
-		rules.add(G_CanonicalPropertyType.ADDRESS_STREET.name(), G_Constraint.COMPARE_EQUALS);
-		rules.add(G_CanonicalPropertyType.NAME.name(), G_Constraint.COMPARE_EQUALS);
-		rules.add(G_CanonicalPropertyType.MEDIA.name(), G_Constraint.COMPARE_EQUALS);
+		rules.add(G_CanonicalPropertyType.ADDRESS.name(), G_SearchType.COMPARE_EQUALS);
+		rules.add(G_CanonicalPropertyType.ADDRESS_STREET.name(), G_SearchType.COMPARE_EQUALS);
+		rules.add(G_CanonicalPropertyType.NAME.name(), G_SearchType.COMPARE_EQUALS);
+		rules.add(G_CanonicalPropertyType.MEDIA.name(), G_SearchType.COMPARE_EQUALS);
 
 	}
 

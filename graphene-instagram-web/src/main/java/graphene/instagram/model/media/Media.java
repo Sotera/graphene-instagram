@@ -319,4 +319,22 @@ public class Media {
     	}
     	return getSpecialTokens('#', comments);
     }
+    
+    public Set<Tuple<String, String>> getAllAts() {
+    	Set<Tuple<String, String>> allAts = new HashSet<Tuple<String, String>>();
+    	if (allAts.addAll(getAtsInCaption())) {
+    		allAts.addAll(getAtsInComments());
+    	}
+    	
+    	return allAts;
+    }
+    
+    public Set<Tuple<String, String>> getAllHashTags() {
+    	Set<Tuple<String, String>> allHashTags = new HashSet<Tuple<String, String>>();
+    	if (allHashTags.addAll(getHashTagsInCaption())) {
+    		allHashTags.addAll(getHashTagsInComments());
+    	}
+    	
+    	return allHashTags;
+    }
 }
