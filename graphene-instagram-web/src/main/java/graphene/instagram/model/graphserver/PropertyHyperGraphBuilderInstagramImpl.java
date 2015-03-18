@@ -76,12 +76,10 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 		// styleservice (inject it)
 		legendItems.add(new V_LegendItem("#a90329", "Item you searched for."));
 		legendItems.add(new V_LegendItem("darkblue", "Selected item(s)."));
-		supportedDatasets.add("Instagram");
+
 		setupTraversalDepths();
 		setupTrimmingOptions();
 		setupNodeInheritance();
-		// linkGenerator = searchPage;
-
 	}
 
 	@Override
@@ -148,7 +146,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 						edge.addData("Parent_Score", "" + inheritedScore);
 						edge.addData("Value",
 								StringUtils.coalesc(" ", a.getLabel(), relationValue, attachTo.getLabel()));
-						edgeMap.put(key, edge);
+						edgeList.put(key, edge);
 					}
 
 					// if this flag is set, we'll add the attributes to the
@@ -235,35 +233,45 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	public void performPostProcess(final V_GraphQuery graphQuery) {
 		logger.debug("Before post process, node list is size " + nodeList.size());
 		logger.debug("Before post process, edge list is size " + edgeList.size());
-		if (MARK_START_NODE) {
-			for (final V_GenericNode n : nodeList.getNodes()) {
-				for (final String queryId : graphQuery.getSearchIds()) {
-					final String a = n.getLabel().toLowerCase().trim();
-					final String c = n.getDataValue("text");
-					final String b = queryId.toLowerCase().trim();
-					if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(a, b)
-							|| org.apache.commons.lang3.StringUtils.containsIgnoreCase(b, a)) {
-						n.setColor(style.getHighlightBackgroundColor());
-					} else if ((c != null) && org.apache.commons.lang3.StringUtils.containsIgnoreCase(c, b)) {
-						n.setColor(style.getHighlightBackgroundColor());
-					}
-					// n.addData("Label", a);
 
+		V_GenericNode startNode = null;
+
+		// mandatory now. you'll see why down below
+		// if (MARK_START_NODE) {
+		for (final V_GenericNode n : nodeList.values()) {
+			for (final String queryId : graphQuery.getSearchIds()) {
+				final String a = n.getLabel().toLowerCase().trim();
+				final String c = n.getDataValue("text");
+				final String b = queryId.toLowerCase().trim();
+				if (org.apache.commons.lang3.StringUtils.containsIgnoreCase(a, b)
+						|| org.apache.commons.lang3.StringUtils.containsIgnoreCase(b, a)) {
+					n.setColor(style.getHighlightBackgroundColor());
+					if ((startNode == null) && (n.getNodeType() == "REPORT_ID")) {
+						startNode = n;
+					}
+				} else if ((c != null) && org.apache.commons.lang3.StringUtils.containsIgnoreCase(c, b)) {
+					n.setColor(style.getHighlightBackgroundColor());
+					if ((startNode == null) && (n.getNodeType() == "REPORT_ID")) {
+						startNode = n;
+					}
 				}
+				// n.addData("Label", a);
 
 			}
+
 		}
+		// }
 		if (TRIM_UNSHARED_NODES) {
 
-			final V_NodeList newNodeList = new V_NodeList();
+			final Map<String, V_GenericNode> newNodeList = new HashMap<String, V_GenericNode>();
 			final Map<String, Integer> countMap = new HashMap<String, Integer>();
-			final V_EdgeList newEdgeList = new V_EdgeList(null);
+			final Map<String, V_GenericEdge> newEdgeList = new HashMap<String, V_GenericEdge>();
 
 			/*
 			 * First we iterate over all the edges. Each time we see a node as
 			 * either a source or target, we increment it's count.
 			 */
-			for (final V_GenericEdge e : edgeList.getEdges()) {
+			for (final V_GenericEdge e : edgeList.values()) {
 				final String s = e.getSourceId();
 				final String t = e.getTargetId();
 				final Integer sCount = countMap.get(s);
@@ -280,19 +288,18 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 				}
 			}
 
-			for (final V_GenericEdge e : edgeList.getEdges()) {
+			for (final V_GenericEdge e : edgeList.values()) {
 				boolean keepEdge = true;
 				boolean keepTarget = true;
 				boolean keepSource = true;
 				final String s = e.getSourceId();
 				final String t = e.getTargetId();
 				if (countMap.get(s) == 1) {
-					final V_GenericNode n = nodeList.getNode(s);
+					final V_GenericNode n = nodeList.get(s);
 					if (n != null) {
-						final String sType = nodeList.getNode(s).getIdType();
 						// If the type is not something we always have to keep,
 						// then mark the node and this edge to be pruned.
-						if (!listOfTypesToAlwaysKeep.contains(sType)) {
+						if (!listOfTypesToAlwaysKeep.contains(n.getIdType())) {
 							keepSource = false;
 							keepEdge = false;
 						}
@@ -301,10 +308,9 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 					}
 				}
 				if (countMap.get(t) == 1) {
-					final V_GenericNode n = nodeList.getNode(t);
+					final V_GenericNode n = nodeList.get(t);
 					if (n != null) {
-						final String tType = nodeList.getNode(t).getIdType();
-						if (!listOfTypesToAlwaysKeep.contains(tType)) {
+						if (!listOfTypesToAlwaysKeep.contains(n.getIdType())) {
 							keepTarget = false;
 							keepEdge = false;
 						}
@@ -313,17 +319,22 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 					}
 				}
 				if (keepEdge == true) {
-					if (e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name())) {
-						e.setLineStyle("dotted");
-						e.setWeight(50);
+					// if
+					// (e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name()))
+					// {
+					// e.setLineStyle("dotted");
+					// e.setWeight(50);
+					// }
+					// newEdgeList.addEdge(e);
+					if (!e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name())) {
+						newEdgeList.put(e.getId(), e);
 					}
-					newEdgeList.addEdge(e);
 				}
 				if (keepSource == true) {
-					newNodeList.addNode(nodeList.getNode(s));
+					newNodeList.put(s, nodeList.get(s));
 				}
 				if (keepTarget == true) {
-					newNodeList.addNode(nodeList.getNode(t));
+					newNodeList.put(t, nodeList.get(t));
 				}
 			}
 
@@ -335,6 +346,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 			logger.debug("New node list is size " + nodeList.size());
 			logger.debug("New edge list is size " + edgeList.size());
 		}
+
 	}
 
 	@PostInjection
