@@ -1,11 +1,10 @@
 package graphene.instagram.model.graphserver;
 
-import graphene.dao.IconService;
+import graphene.dao.HyperGraphBuilder;
 import graphene.dao.es.impl.BasicParserESImpl;
 import graphene.hts.entityextraction.Extractor;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_SymbolConstants;
-import graphene.services.HyperGraphBuilder;
 import graphene.services.PropertyHyperGraphBuilder;
 import graphene.util.StringUtils;
 import graphene.util.Triple;
@@ -60,6 +59,14 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 	public static final String MEDIA_LOCATION_LATLON = "medialocationlatlon";
 	public static final String MEDIA_LOCATION_NAME = "medialocationname";
 	public static final String MEDIA_THUMBNAIL = "mediathumbnail";
+	public static final String ATS_IN_COMMENTS = "atsincomments";
+	public static final String ATS_IN_CAPTION = "atsincaption";
+	public static final String ALL_ATS = "allats";
+	public static final String HASHTAGS_IN_COMMENTS = "hashtagsincomments";
+	public static final String HASHTAGS_IN_CAPTION = "hashtagsincaption";
+	public static final String ALL_HASHTAGS = "allhashtags";
+	
+	
 
 	/**
 	 * You require the query generated from this object to have a low priority
@@ -98,8 +105,7 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 	protected URLEncoder encoder;
 	private HashMap<String, Extractor> extractorMap;
 	private ArrayList<Extractor> extractors;
-	@Inject
-	protected IconService iconService;
+
 	@Inject
 	protected Logger logger;
 
@@ -109,7 +115,6 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 
 	protected String reportLinkTitle = "1) Open Media";
 
-	protected List<String> supported;
 	@Inject
 	@Symbol(G_SymbolConstants.ENABLE_FREE_TEXT_EXTRACTION)
 	private boolean enableFreeTextExtraction;

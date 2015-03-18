@@ -28,7 +28,6 @@ import graphene.hts.entityextraction.Extractor;
 import graphene.hts.keywords.KeywordExtractorImpl;
 import graphene.hts.sentences.SentenceExtractorImpl;
 import graphene.instagram.dao.impl.GraphTraversalRuleServiceImpl;
-import graphene.instagram.dao.impl.IconServiceImpl;
 import graphene.instagram.dao.impl.InstagramDataAccess;
 import graphene.instagram.dao.impl.es.DataSourceListDAOESImpl;
 import graphene.instagram.web.services.InstagramStartupProceduresImpl;
@@ -79,7 +78,6 @@ public class InstagramDAOModule {
 		binder.bind(Extractor.class, SentenceExtractorImpl.class).withId("sentence");
 
 		binder.bind(MitieDAO.class, MitieDAOImpl.class);
-		binder.bind(IconService.class, IconServiceImpl.class);
 		binder.bind(StopWordService.class, StopWordServiceDefaultImpl.class);
 
 		binder.bind(StartupProcedures.class, InstagramStartupProceduresImpl.class);

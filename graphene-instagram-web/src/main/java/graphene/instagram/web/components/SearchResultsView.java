@@ -5,6 +5,7 @@ import graphene.dao.DataSourceListDAO;
 import graphene.dao.G_Parser;
 import graphene.dao.LoggingDAO;
 import graphene.dao.StyleService;
+import graphene.instagram.model.graphserver.InstagramParser;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_Property;
@@ -121,6 +122,12 @@ public class SearchResultsView {
 
 	@Property
 	private Triple<String, String, String> currentAddress;
+	
+	@Property
+	private Tuple<String, String> currentHashTag;
+	
+	@Property
+	private Tuple<String, String> currentAt;
 
 	@Property
 	private G_Property currentProperty;
@@ -276,7 +283,7 @@ public class SearchResultsView {
 	 */
 	private G_SearchResults getEntities(final String schema, final String subType, final String matchType,
 			final String value, final int maxResults) {
-		logger.debug("=========================================================IN FINCEN doing FINCEN STUFF");
+		logger.debug("=========================================================In INSTAGRAM doing INSTAGRAM STUFF");
 		G_SearchResults metaresults = null;
 		if (ValidationUtils.isValid(value)) {
 			G_SearchType g_SearchType = null;
@@ -359,27 +366,7 @@ public class SearchResultsView {
 	 * @return
 	 */
 	public String getExtLink() {
-		return extPath + getReportId();
-	}
-
-	public String getFormattedAmount() {
-		String amount = null;
-		try {
-			final Double d = getAmount();
-			// amount = DataFormatConstants.formatMoney(getAmount());
-
-			// amount = formatter.format(getAmount());
-			// DataFormatConstants.formatter.setParseIntegerOnly(true);
-			amount = DataFormatConstants.formatter.format(d);
-
-			// XXX: Hack to remove cents and decimal
-			amount = amount.subSequence(0, amount.length() - 3).toString();
-
-			return amount;
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
-		return amount;
+		return extPath + getMediaId();
 	}
 
 	/**
@@ -402,30 +389,34 @@ public class SearchResultsView {
 	protected Messages getMessages() {
 		return messages;
 	}
-
+	
+	
 	public BeanModel getModel() {
 		if (model == null) {
 			model = beanModelSource.createEditModel(Object.class, messages);
 			model.addEmpty("rank");
 			model.addEmpty("actions");
-			model.addEmpty("informationIcons");
-			model.addEmpty("date");
-			model.addEmpty("amount");
-			model.addEmpty("subjects");
-			model.addEmpty("addressList");
-			model.addEmpty("communicationIdentifierList");
-			model.addEmpty("identifierList");
-
+			model.addEmpty("username");
+			model.addEmpty("createdTime");
+			model.addEmpty("captionText");
+			model.addEmpty("likeCount");
+			model.addEmpty("commentCount");
+			model.addEmpty("hashtags");
+			model.addEmpty("ats");
+			model.addEmpty("location");
+	
 			model.getById("rank").sortable(true);
-			model.getById("actions").sortable(true);
-			model.getById("informationIcons").sortable(false);
-			model.getById("date").sortable(true);
-			model.getById("amount").sortable(true);
-			model.getById("subjects").sortable(true);
-			model.getById("addressList").sortable(true);
-			model.getById("communicationIdentifierList").sortable(true);
-			model.getById("identifierList").sortable(true);
+			model.getById("actions").sortable(false);
+			model.getById("username").sortable(true);
+			model.getById("createdTime").sortable(true);
+			model.getById("captionText").sortable(true);
+			model.getById("likeCount").sortable(true);
+			model.getById("commentCount").sortable(true);
+			model.getById("hashtags").sortable(true);
+			model.getById("ats").sortable(true);
+			model.getById("location").sortable(true);
 		}
+
 		return model;
 	}
 
@@ -493,7 +484,7 @@ public class SearchResultsView {
 		columnArray.put(new JSONObject("mDataProp", properties[columnArray.length()][0], "bSortable", "true", "sWidth",
 				properties[columnArray.length()][1], "sType", "string"));
 
-		json.put("aoColumns", columnArray);
+//		json.put("aoColumns", columnArray);
 		json.put("oLanguage", new JSONObject("sSearch", "Filter:"));
 
 		return json;
@@ -507,24 +498,74 @@ public class SearchResultsView {
 	public Long getRank() {
 		return (Long) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.CARDINAL_ORDER));
 	}
-
-	public String getReportId() {
-		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.REPORT_ID));
+	
+	public String getMediaId() {
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_ID));
 	}
-
-	public String getReportPageLink() {
-		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.REPORT_LINK));
-
+	
+	public String getMediaPageLink() {
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_LINK));
 	}
-
-	public String getReportType() {
-		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.REPORT_TYPE));
+	
+	public String getMediaOwner() {
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_OWNER));
+	}
+	
+	public String getMediaCaption() {
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_CAPTION_TEXT));
+	}
+	
+	public String getMediaLikeCount() {
+		return String.valueOf(PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_LIKE_COUNT)));
+	}
+	
+	public String getMediaCommentCount() {
+		return String.valueOf(PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_COMMENT_COUNT)));
+	}
+	
+	public String getMediaLocationLatLon() {
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_LOCATION_LATLON));
+	}
+	
+	public String getMediaLocationName() {
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_LOCATION_NAME));
+	}
+	
+	public String getMediaThumbnail() {
+		return (String) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_THUMBNAIL));
+	}
+	
+	public Object getMediaCreatedTime() {
+		return PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.MEDIA_CREATED_TIME));
+	}
+	
+	public Collection<Tuple<String, String>> getAtsInComments() {
+		return (Collection<Tuple<String, String>>) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.ATS_IN_COMMENTS));
+	}
+	
+	public Collection<Tuple<String, String>> getAtsInCaption() {
+		return (Collection<Tuple<String, String>>) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.ATS_IN_CAPTION));
+	}
+	
+	public List<Tuple<String, String>> getAllAts() {
+		return (List<Tuple<String, String>>) PropertyHelper.getListValue(getEntity().getProperties().get(InstagramParser.ALL_ATS));
+	}
+	
+	public Collection<Tuple<String, String>> getHashTagsInComments() {
+		return (Collection<Tuple<String, String>>) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.HASHTAGS_IN_COMMENTS));
+	}
+	
+	public Collection<Tuple<String, String>> getHashTagsInCaption() {
+		return (Collection<Tuple<String, String>>) PropertyHelper.getSingletonValue(getEntity().getProperties().get(InstagramParser.HASHTAGS_IN_CAPTION));
+	}
+	
+	public List<Tuple<String, String>> getAllHashTags() {
+		return (List<Tuple<String, String>>) PropertyHelper.getListValue(getEntity().getProperties().get(InstagramParser.ALL_HASHTAGS));
 	}
 
 	public String getScore() {
 		return DataFormatConstants.formatScore(
 				(Double) PropertyHelper.getSingletonValue(getEntity().getProperties().get(G_Parser.SCORE)), 0.0d);
-
 	}
 
 	/**

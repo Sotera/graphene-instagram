@@ -1,11 +1,11 @@
 package graphene.instagram.model.graphserver;
 
+import graphene.dao.DocumentBuilder;
 import graphene.dao.G_Parser;
-import graphene.dao.FederatedPropertyGraphServer;
+import graphene.dao.HyperGraphBuilder;
 import graphene.instagram.dao.GraphTraversalRuleService;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_SearchType;
-import graphene.services.HyperGraphBuilder;
 
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.MappedConfiguration;
@@ -26,12 +26,6 @@ public class GraphServerModule {
 
 	}
 
-	@Contribute(FederatedPropertyGraphServer.class)
-	public static void contributeApplication2(final Configuration<HyperGraphBuilder> singletons,
-			@InjectService("HyperProperty") final HyperGraphBuilder egb) {
-		singletons.add(egb);
-	}
-
 	/**
 	 * Contribute to the list of available parsers.
 	 * 
@@ -39,7 +33,7 @@ public class GraphServerModule {
 	 * @param singletons
 	 * @param media
 	 */
-	@Contribute(HyperGraphBuilder.class)
+	@Contribute(DocumentBuilder.class)
 	public static void contributeParsers(final Configuration<G_Parser> singletons,
 			@InjectService(MEDIA) final G_Parser media) {
 		singletons.add(media);

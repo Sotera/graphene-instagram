@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GenericNode;
@@ -31,7 +32,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 
 	public MediaGraphParser() {
 		supported = new ArrayList<String>(1);
-		supported.add(Media.class.getCanonicalName());
+		supported.add("media");
 		parenting = false;
 	}
 
@@ -64,10 +65,21 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		map.put(MEDIA_THUMBNAIL,
 				new PropertyHelper(MEDIA_THUMBNAIL, MEDIA_THUMBNAIL, p.getThumbnail(), Collections
 						.singletonList(G_PropertyTag.LINKED_DATA)));
-		map.put(MEDIA_LOCATION_LATLON, new PropertyHelper(MEDIA_LOCATION_LATLON, MEDIA_LOCATION_LATLON, p.getLocation()
-				.getLatitude() + ", " + p.getLocation().getLongitude(), Collections.singletonList(G_PropertyTag.GEO)));
+		
+		if (p.getLocation().getLatitude()!=null && p.getLocation().getLongitude()!=null) {
+			map.put(MEDIA_LOCATION_LATLON, new PropertyHelper(MEDIA_LOCATION_LATLON, MEDIA_LOCATION_LATLON, p.getLocation()
+					.getLatitude() + ", " + p.getLocation().getLongitude(), Collections.singletonList(G_PropertyTag.GEO)));
+		}
+		
 		map.put(MEDIA_LOCATION_NAME, new PropertyHelper(MEDIA_LOCATION_NAME, MEDIA_LOCATION_NAME, p.getLocation()
 				.getName(), Collections.singletonList(G_PropertyTag.GEO)));
+		
+		map.put(ALL_ATS, new PropertyHelper(ALL_ATS, ALL_ATS, G_PropertyType.OTHER, p.getAllAts(), G_PropertyTag.STAT));
+		map.put(ALL_HASHTAGS, new PropertyHelper(ALL_HASHTAGS, ALL_HASHTAGS, G_PropertyType.OTHER, p.getAllHashTags(), G_PropertyTag.STAT));
+
+		
+		
+		
 
 		// list.add(G_Property
 		// .newBuilder()
