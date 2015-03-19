@@ -21,13 +21,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GenericNode;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+/**
+ * This is a parser for a particular document type in this application.
+ * 
+ * @author djue
+ * 
+ */
 public class MediaGraphParser extends InstagramParser<Media> {
 
 	public MediaGraphParser() {
@@ -42,7 +47,10 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		final Map<String, G_Property> map = new HashMap<String, G_Property>();
 		resetLists();
 		final Media p = getClassFromJSON(sr, Media.class);
-
+		if (!ValidationUtils.isValid(p)) {
+			logger.error("Error building DTO from Json for document " + sr.toString());
+			return null;
+		}
 		map.put(MEDIA_LABEL,
 				new PropertyHelper(MEDIA_LABEL, MEDIA_LABEL, getReportLabel(p), Collections
 						.singletonList(G_PropertyTag.LABEL)));
@@ -65,21 +73,19 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		map.put(MEDIA_THUMBNAIL,
 				new PropertyHelper(MEDIA_THUMBNAIL, MEDIA_THUMBNAIL, p.getThumbnail(), Collections
 						.singletonList(G_PropertyTag.LINKED_DATA)));
-		
-		if (p.getLocation().getLatitude()!=null && p.getLocation().getLongitude()!=null) {
-			map.put(MEDIA_LOCATION_LATLON, new PropertyHelper(MEDIA_LOCATION_LATLON, MEDIA_LOCATION_LATLON, p.getLocation()
-					.getLatitude() + ", " + p.getLocation().getLongitude(), Collections.singletonList(G_PropertyTag.GEO)));
+
+		if ((p.getLocation().getLatitude() != null) && (p.getLocation().getLongitude() != null)) {
+			map.put(MEDIA_LOCATION_LATLON,
+					new PropertyHelper(MEDIA_LOCATION_LATLON, MEDIA_LOCATION_LATLON, p.getLocation().getLatitude()
+							+ ", " + p.getLocation().getLongitude(), Collections.singletonList(G_PropertyTag.GEO)));
 		}
-		
+
 		map.put(MEDIA_LOCATION_NAME, new PropertyHelper(MEDIA_LOCATION_NAME, MEDIA_LOCATION_NAME, p.getLocation()
 				.getName(), Collections.singletonList(G_PropertyTag.GEO)));
-		
-		map.put(ALL_ATS, new PropertyHelper(ALL_ATS, ALL_ATS, G_PropertyType.OTHER, p.getAllAts(), G_PropertyTag.STAT));
-		map.put(ALL_HASHTAGS, new PropertyHelper(ALL_HASHTAGS, ALL_HASHTAGS, G_PropertyType.OTHER, p.getAllHashTags(), G_PropertyTag.STAT));
 
-		
-		
-		
+		map.put(ALL_ATS, new PropertyHelper(ALL_ATS, ALL_ATS, G_PropertyType.OTHER, p.getAllAts(), G_PropertyTag.STAT));
+		map.put(ALL_HASHTAGS, new PropertyHelper(ALL_HASHTAGS, ALL_HASHTAGS, G_PropertyType.OTHER, p.getAllHashTags(),
+				G_PropertyTag.STAT));
 
 		// list.add(G_Property
 		// .newBuilder()

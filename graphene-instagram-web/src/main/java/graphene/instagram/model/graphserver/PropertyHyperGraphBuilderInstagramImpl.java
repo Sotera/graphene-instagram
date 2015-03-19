@@ -15,13 +15,12 @@ import graphene.model.idlhelper.PropertyHelper;
 import graphene.model.idlhelper.PropertyMatchDescriptorHelper;
 import graphene.model.idlhelper.QueryHelper;
 import graphene.model.idlhelper.SingletonRangeHelper;
-import graphene.services.PropertyHyperGraphBuilder;
+import graphene.services.AbstractGraphBuilder;
 import graphene.util.DataFormatConstants;
 import graphene.util.StringUtils;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,7 @@ import org.slf4j.Logger;
  * @author djue
  * 
  */
-public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBuilder<Object> {
+public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder {
 
 	public static final int MAX_RESULTS = 20;
 	public static final double MIN_SCORE = 0.75d;
@@ -68,8 +67,8 @@ public class PropertyHyperGraphBuilderInstagramImpl extends PropertyHyperGraphBu
 	@Inject
 	private DocumentBuilder db;
 
-	public PropertyHyperGraphBuilderInstagramImpl(final Collection<G_Parser> singletons) {
-		super(singletons);
+	public PropertyHyperGraphBuilderInstagramImpl() {
+
 		// constant legend items regardless of what other node types are present
 		// in graph
 		// XXX: fix this, pull the highlight color and selected color from the

@@ -5,7 +5,6 @@ import graphene.dao.es.impl.BasicParserESImpl;
 import graphene.hts.entityextraction.Extractor;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_SymbolConstants;
-import graphene.services.PropertyHyperGraphBuilder;
 import graphene.util.StringUtils;
 import graphene.util.Triple;
 import graphene.util.validator.ValidationUtils;
@@ -26,21 +25,12 @@ import org.apache.tapestry5.services.URLEncoder;
 import org.slf4j.Logger;
 
 /**
- * There are two types of data collection procedures you may want to call, and
- * they are separated by whether or not they get attributed to the report as a
- * whole, or to a particular subject within the report.
+ * This is the parent class for any type of instagram documents to parse. If you
+ * have more than one type of document, this class can act as a repository for
+ * common constants, fields and utilities for all the document parsers you may
+ * create.
  * 
- * The first is the easy one, collecting identifiers of a certain type from
- * structured fields. These are usually directly related to a subject in the
- * report.
- * 
- * The second one is less reliable, collecting identifiers of a certain type
- * from unstructured text (usually a single narrative), which is attributed to
- * the report as a whole. These nodes should also have an attribute showing that
- * they were extracted from a narrative.
- * 
- * For times when you want to combine both structured and unstructured results,
- * you would combine the set of both. (such as for search query results)
+ * Currently Instagram has one document type, {@link Media}.
  * 
  * @author djue
  * @param <T>
@@ -108,7 +98,7 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 
 	protected boolean parenting = false;
 
-	protected PropertyHyperGraphBuilder<Object> phgb;
+	protected HyperGraphBuilder phgb;
 
 	protected String reportLinkTitle = "1) Open Media";
 
@@ -275,7 +265,7 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 	public abstract String getIdFromDoc(T p);
 
 	@Override
-	public HyperGraphBuilder<Object> getPhgb() {
+	public HyperGraphBuilder getPhgb() {
 		return phgb;
 	}
 
@@ -350,7 +340,7 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 	}
 
 	@Override
-	public void setPhgb(final PropertyHyperGraphBuilder<Object> phgb) {
+	public void setPhgb(final HyperGraphBuilder phgb) {
 		this.phgb = phgb;
 	}
 
