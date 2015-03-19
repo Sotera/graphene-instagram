@@ -140,20 +140,25 @@
         Config.Play = Config.imagesUrl + "Play_Hover14.png";
 
 </script>
-
+	<!-- Graph Wrapper and its components  -->
+	<script type="text/javascript" src="core/js/cmp/Graph/wrapper/CytoGraphOverrides.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/wrapper/CytoGraphVis.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/wrapper/DijkstraManager.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/wrapper/FabricLayout.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/wrapper/GraphGenerator.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/wrapper/GraphUtils.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/wrapper/LayoutManager.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/wrapper/StateManager.js"></script>
 
 	<!-- Common Graph Tools -->
 	<script type="text/javascript" src="core/js/cmp/Graph/common/AbstractGraphPanel.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/AbstractNodeDisplay.js"></script>
-	<script type="text/javascript" src="core/js/cmp/Graph/common/cytoGraphSubs.js"></script>
-	<script type="text/javascript" src="core/js/cmp/Graph/common/cytoOverrides.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/graphSettings.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/GraphToolbar.js"></script>
-	<script type="text/javascript" src="core/js/cmp/Graph/common/graphUtils.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/NodeActions.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/NodeEditor.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/NodeMergeDialog.js"></script>
-	<script type="text/javascript" src="core/js/cmp/Graph/common/RadialContextMenu.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/common/ProgressBar.js"></script>
 
 	<!-- OUR SHARED TOOLS -->
 	<script type="text/javascript" src="core/js/cmp/shared/utils.js"></script>
@@ -235,9 +240,6 @@
 			// if you only have one legend type in the app, setting the default makes it easier to access without having to
 			// remember the key "graph_legend" anywhere else.
 			GLegend.setDefaultGroupName("graph_legend");
-			
-			// create and modify global RadialContextMenu object
-			GRadialMenu = new RadialContextMenu({/* config parameters */});
 
 			var parm = window.location.search;
 			if (parm && parm.length > 1) {
