@@ -315,26 +315,27 @@ public class SearchResultsView {
 			} else {
 			}
 
-			final G_PropertyMatchDescriptor identifiers = G_PropertyMatchDescriptor.newBuilder().setKey("identifiers")
+			final G_PropertyMatchDescriptor identifiers = G_PropertyMatchDescriptor.newBuilder().setKey("_all")
 					.setRange(new ListRangeHelper(G_PropertyType.STRING, value))
 					.setConstraint(graphene.model.idl.G_Constraint.REQUIRED_EQUALS).build();
 
 			try {
 				final QueryHelper sq = new QueryHelper(identifiers);// queryBuilder.build();
+				sq.setTargetSchema("instagram");
 				if (isUserExists()) {
 					sq.setUserId(getUser().getId());
 					sq.setUsername(getUser().getUsername());
 				}
-				if (ValidationUtils.isValid(subType) && !subType.contains(DataSourceListDAO.ALL_REPORTS)) {
-					final G_PropertyMatchDescriptor filters = G_PropertyMatchDescriptor
-							.newBuilder()
-							.setKey("filters")
-							.setRange(
-									new ListRangeHelper(G_PropertyType.STRING, graphene.util.StringUtils
-											.tokenizeToStringCollection(subType, ",")))
-							.setConstraint(graphene.model.idl.G_Constraint.REQUIRED_EQUALS).build();
-					sq.getPropertyMatchDescriptors().add(filters);
-				}
+//				if (ValidationUtils.isValid(subType) && !subType.contains(DataSourceListDAO.ALL_REPORTS)) {
+//					final G_PropertyMatchDescriptor filters = G_PropertyMatchDescriptor
+//							.newBuilder()
+//							.setKey("filters")
+//							.setRange(
+//									new ListRangeHelper(G_PropertyType.STRING, graphene.util.StringUtils
+//											.tokenizeToStringCollection(subType, ",")))
+//							.setConstraint(graphene.model.idl.G_Constraint.REQUIRED_EQUALS).build();
+//					sq.getPropertyMatchDescriptors().add(filters);
+//				}
 				// loggingDao.recordQuery(sq);
 				// if (currentSelectedWorkspaceExists) {
 				// List<G_EntityQuery> qo =
