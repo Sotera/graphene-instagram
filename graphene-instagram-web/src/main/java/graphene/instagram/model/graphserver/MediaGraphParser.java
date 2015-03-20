@@ -234,7 +234,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 	// of new identifiers to search on.
 	@Override
 	public boolean parse(final G_SearchResult sr, final G_EntityQuery q) {
-		final G_Entity entity = (G_Entity) sr.getResult();
+		sr.getResult();
 
 		final Media p = getDTO(sr, Media.class);
 		// final Media p = getClassFromJSON(sr, Media.class);s
@@ -252,15 +252,10 @@ public class MediaGraphParser extends InstagramParser<Media> {
 			// report node does not attach to anything.
 			final V_GenericNode reportNode = phgb.createOrUpdateNode(reportId, G_CanonicalPropertyType.MEDIA.name(),
 					G_CanonicalPropertyType.MEDIA.name(), null, null, null);
-			// reportNode.setLabel((String)
-			// p.getAdditionalProperties().get(MEDIA_LABEL));
-			// reportNode.addData("Type", (String)
-			// p.getAdditionalProperties().get(REPORT_TYPE));
-			final String reportLink = "<a href=\"" + p.getLink() + "\" class=\"btn btn-primary\" target=\"" + p.getId()
-					+ "\" >" + p.getId() + "</a>";
 
 			// final G_Entity entity = buildEntityFromDocument(sr, q);
-			phgb.addReportDetails(reportNode, entity.getProperties(), reportLinkTitle, reportLink);
+			// phgb.addReportDetails(reportNode, entity.getProperties(),
+			// reportLinkTitle, reportLink);
 
 			phgb.addGraphQueryPath(reportNode, q);
 

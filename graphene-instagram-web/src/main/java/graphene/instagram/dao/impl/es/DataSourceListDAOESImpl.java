@@ -4,9 +4,6 @@ import graphene.dao.DataSourceListDAO;
 import graphene.dao.es.BasicESDAO;
 import graphene.dao.es.ESRestAPIConnection;
 import graphene.dao.es.JestModule;
-import graphene.model.datasourcedescriptors.DataSet;
-import graphene.model.datasourcedescriptors.DataSetField;
-import graphene.model.datasourcedescriptors.DataSource;
 import graphene.model.datasourcedescriptors.DataSourceList;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
@@ -39,13 +36,11 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 	private String indexName;
 
 	public DataSourceListDAOESImpl() {
-		// TODO Auto-generated constructor stub
 	}
 
-	public DataSourceListDAOESImpl(final ESRestAPIConnection c, final JestClient jestClient, final Logger logger) {
+	public DataSourceListDAOESImpl(final ESRestAPIConnection c, final Logger logger) {
 		auth = null;
 		this.c = c;
-//		this.jestClient = jestClient;
 		mapper = new ObjectMapper(); // can reuse, share globally
 		this.logger = logger;
 
@@ -58,7 +53,7 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 
 	public List<String> getAvailableTypes(final String theIndex) {
 		final List<String> types = new ArrayList<String>(10);
-//		types.add(ALL_REPORTS);
+		// types.add(ALL_REPORTS);
 		try {
 			final JestClient client = c.getClient();
 			final io.searchbox.indices.mapping.GetMapping.Builder g = new GetMapping.Builder();
@@ -103,11 +98,11 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 	 * @author PWG for DARPA
 	 * 
 	 */
-//	@Override
-//	public DataSourceList getList() {
-//		final DataSourceList list = new DataSourceList();
-//
-//		return dataSourceList;
-//	}
+	// @Override
+	// public DataSourceList getList() {
+	// final DataSourceList list = new DataSourceList();
+	//
+	// return dataSourceList;
+	// }
 
 }
