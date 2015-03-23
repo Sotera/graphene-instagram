@@ -13,10 +13,18 @@
 
     <style type="text/css">
 		
+		.x-boundlist-item img.chkCombo {
+			background: transparent url(core/js/libs/extjs/resources/themes/images/default/menu/unchecked.gif);
+		}
+		.x-boundlist-selected img.chkCombo{
+			background: transparent url(core/js/libs/extjs/resources/themes/images/default/menu/checked.gif);
+		}
+		
 		#EntityGraph {
 			background-color: lightyellow;
 			color: 'black';
 		}
+		
 		x-busy-tab {
 			background-color: lightyellow;
 		}
@@ -153,6 +161,7 @@
 	<!-- Common Graph Tools -->
 	<script type="text/javascript" src="core/js/cmp/Graph/common/AbstractGraphPanel.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/AbstractNodeDisplay.js"></script>
+	<script type="text/javascript" src="core/js/cmp/Graph/common/AdvancedQueryPanel.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/graphSettings.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/GraphToolbar.js"></script>
 	<script type="text/javascript" src="core/js/cmp/Graph/common/NodeActions.js"></script>
@@ -170,13 +179,6 @@
 	<script type="text/javascript" src="core/js/cmp/shared/importDialog.js"></script>
 	<script type="text/javascript" src="core/js/cmp/shared/ActivityLogger.js"></script>
 	<script type="text/javascript" src="core/js/cmp/shared/legendDefs.js"></script>
-	<!-- <script type="text/javascript" src="core/js/cmp/shared/interactiond3.js"></script> -->
-	<!-- <script type="text/javascript" src="core/js/cmp/shared/scatterplotd3.js"></script> -->
-	<!-- <script type="text/javascript" src="core/js/cmp/shared/histogram.js"></script> -->
-	<!-- <script type="text/javascript" src="core/js/cmp/shared/TLCharts.js"></script> -->
-	<!-- <script type="text/javascript" src="core/js/cmp/shared/gridFilterSettings.js"></script> -->
-	<!-- <script type="text/javascript" src="core/js/cmp/shared/DetailsViewer.js"></script> -->
-	<!-- <script type="text/javascript" src="core/js/cmp/shared/filterSettings2.js"></script> -->
 	
 	<!-- Shared tools overrides -->
 	<!-- none -->
