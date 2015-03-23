@@ -4,6 +4,7 @@ import graphene.dao.DataSourceListDAO;
 import graphene.dao.G_Parser;
 import graphene.dao.LoggingDAO;
 import graphene.dao.StyleService;
+import graphene.dao.es.JestModule;
 import graphene.instagram.model.graphserver.InstagramParser;
 import graphene.model.idl.G_Constraint;
 import graphene.model.idl.G_DataAccess;
@@ -84,14 +85,17 @@ public class SearchResultsView {
 	@Inject
 	@Symbol(G_SymbolConstants.APPLICATION_NAME)
 	protected String appName;
+	
 	@Property
 	@Inject
 	@Symbol(G_SymbolConstants.ENABLE_WORKSPACES)
 	protected String workspacesEnabled;
 	@Property
+	
 	@Inject
 	@Symbol(G_SymbolConstants.APPLICATION_VERSION)
 	protected String appVersion;
+	
 	@Property
 	@SessionState(create = false)
 	protected List<G_Workspace> workspaces;
@@ -186,6 +190,7 @@ public class SearchResultsView {
 	@Parameter(autoconnect = true, required = true)
 	@Property
 	private String searchTypeFilter;
+	
 	@Parameter(autoconnect = true, required = true)
 	@Property
 	private long maxResults;
@@ -200,7 +205,12 @@ public class SearchResultsView {
 	private CombinedEntitySearchPage searchPage;
 	@Inject
 	@Symbol(G_SymbolConstants.DEFAULT_MAX_SEARCH_RESULTS)
-	private Integer defaultMaxResults;
+	private Long defaultMaxResults;
+	
+	@Inject
+	@Symbol(JestModule.ES_SEARCH_INDEX)
+	private String index;
+	
 	/**
 	 * The type of query to run
 	 */
@@ -321,7 +331,8 @@ public class SearchResultsView {
 
 			try {
 				final QueryHelper sq = new QueryHelper(identifiers);// queryBuilder.build();
-				sq.setTargetSchema("instagram");
+				sq.setTargetSchema(index);
+				sq.setMaxResult(defaultMaxResults);
 				if (isUserExists()) {
 					sq.setUserId(getUser().getId());
 					sq.setUsername(getUser().getUsername());
@@ -336,7 +347,7 @@ public class SearchResultsView {
 //							.setConstraint(graphene.model.idl.G_Constraint.REQUIRED_EQUALS).build();
 //					sq.getPropertyMatchDescriptors().add(filters);
 //				}
-				// loggingDao.recordQuery(sq);
+				loggingDao.recordQuery(sq);
 				// if (currentSelectedWorkspaceExists) {
 				// List<G_EntityQuery> qo =
 				// currentSelectedWorkspace.getQueryObjects();

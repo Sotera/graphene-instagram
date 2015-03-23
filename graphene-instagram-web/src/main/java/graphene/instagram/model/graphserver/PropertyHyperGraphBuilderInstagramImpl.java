@@ -3,29 +3,37 @@ package graphene.instagram.model.graphserver;
 import graphene.dao.DocumentBuilder;
 import graphene.dao.G_Parser;
 import graphene.dao.GraphTraversalRuleService;
+import graphene.dao.es.JestModule;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_CanonicalRelationshipType;
+import graphene.model.idl.G_Constraint;
 import graphene.model.idl.G_DataAccess;
 import graphene.model.idl.G_DocumentError;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
+import graphene.model.idl.G_PropertyMatchDescriptor;
 import graphene.model.idl.G_PropertyType;
 import graphene.model.idl.G_SearchResult;
+import graphene.model.idlhelper.ListRangeHelper;
 import graphene.model.idlhelper.PropertyHelper;
 import graphene.model.idlhelper.PropertyMatchDescriptorHelper;
 import graphene.model.idlhelper.QueryHelper;
 import graphene.model.idlhelper.SingletonRangeHelper;
 import graphene.services.AbstractGraphBuilder;
+import graphene.services.ScoreComparator;
 import graphene.util.DataFormatConstants;
 import graphene.util.StringUtils;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 import mil.darpa.vande.generic.V_GenericEdge;
+import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GenericNode;
 import mil.darpa.vande.generic.V_GraphQuery;
 import mil.darpa.vande.generic.V_LegendItem;
@@ -33,6 +41,7 @@ import mil.darpa.vande.generic.V_LegendItem;
 import org.apache.tapestry5.alerts.Severity;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.PostInjection;
+import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.slf4j.Logger;
 
 /**
@@ -50,6 +59,11 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 	private static final boolean MARK_START_NODE = true;
 	private static final boolean TRIM_UNSHARED_NODES = false;
 	protected HashMap<G_CanonicalPropertyType, String> colorMap = new HashMap<G_CanonicalPropertyType, String>();
+	
+	@Inject
+	@Symbol(JestModule.ES_SEARCH_INDEX)
+	private String index;
+
 
 	@Inject
 	private G_DataAccess combinedDAO;
@@ -227,6 +241,95 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 	public G_DataAccess getDAO() {
 		return combinedDAO;
 	}
+	
+	@Override
+	public V_GenericGraph makeGraphResponse(final V_GraphQuery graphQuery) throws Exception {
+		nodeList = new HashMap<String, V_GenericNode>();
+		// edgeMap = new HashMap<String, V_GenericEdge>();
+		edgeList = new HashMap<String, V_GenericEdge>();
+		scannedQueries = new HashSet<String>();
+
+		final PriorityQueue<G_EntityQuery> queriesToRun = new PriorityQueue<G_EntityQuery>(10, new ScoreComparator());
+		Map<String, V_GenericNode> nodesFromPreviousDegree = new HashMap<String, V_GenericNode>();
+		Map<String, V_GenericEdge> edgesFromPreviousDegree = new HashMap<String, V_GenericEdge>();
+
+		if (graphQuery.getMaxHops() <= 0) {
+			return new V_GenericGraph();
+		} else {
+			logger.debug("Attempting a graph for query " + graphQuery.toString());
+		}
+
+		int intStatus = 0;
+		String strStatus = "Graph Loaded";
+
+		final G_PropertyMatchDescriptor identifierList = G_PropertyMatchDescriptor.newBuilder().setKey("_all")
+				.setRange(new ListRangeHelper(G_PropertyType.STRING, graphQuery.getSearchIds()))
+				.setConstraint(G_Constraint.REQUIRED_EQUALS).build();
+		final QueryHelper qh = new QueryHelper(identifierList);
+		qh.setTargetSchema(index);
+		queriesToRun.add(qh);
+
+		int currentDegree = 0;
+		for (currentDegree = 0; (currentDegree < graphQuery.getMaxHops())
+				&& (nodeList.size() < graphQuery.getMaxNodes()); currentDegree++) {
+			G_EntityQuery eq = null;
+			logger.debug("$$$$There are " + queriesToRun.size() + " queries to run in the current degree.");
+			while ((queriesToRun.size() > 0) && ((eq = queriesToRun.poll()) != null)
+					&& (nodeList.size() < graphQuery.getMaxNodes())) {
+
+				if (ValidationUtils.isValid(eq.getPropertyMatchDescriptors())) {
+					nodesFromPreviousDegree = new HashMap<String, V_GenericNode>(nodeList);
+					edgesFromPreviousDegree = new HashMap<String, V_GenericEdge>(edgeList);
+					logger.debug("Processing degree " + currentDegree);
+
+					/**
+					 * This will end up building nodes and edges, and creating
+					 * new queries for the queue
+					 */
+					logger.debug("1111=====Running query " + eq.toString());
+					getDAO().performCallback(0, eq.getMaxResult(), this, eq);
+					logger.debug("3333====After running " + eq.toString() + ", there are "
+							+ queriesToRunNextDegree.size() + " queries to run in the next degree.");
+				}
+			}// end while loop
+
+			// very important!!
+			// unscannedNodeList.clear();
+			// ////////////////////////////////////////////////
+			logger.debug("4444==== At the end of degree " + currentDegree + ", there are " + nodeList.size()
+					+ " nodes and " + edgeList.size() + " edges");
+
+			logger.debug("5555====There are " + queriesToRunNextDegree.size() + " queries to run in the next degree.");
+			queriesToRun.addAll(queriesToRunNextDegree);
+			queriesToRunNextDegree.clear();
+		}
+
+		// All hops have been done
+		// Check to see if we have too many nodes.
+		if (nodeList.size() > graphQuery.getMaxNodes()) {
+			nodeList = nodesFromPreviousDegree;
+			edgeList = edgesFromPreviousDegree;
+			intStatus = 1; // will trigger the message.
+			strStatus = "Returning only " + currentDegree + " hops, as maximum nodes you requested would be exceeded";
+		} else {
+			intStatus = 1; // will trigger the message.
+			strStatus = "Returning " + nodeList.size() + " nodes and " + edgeList.size() + " edges.";
+		}
+
+		// NOW finally add in all those unique edges.
+
+		performPostProcess(graphQuery);
+		final V_GenericGraph g = new V_GenericGraph(nodeList, edgeList);
+		g.setIntStatus(intStatus);
+		g.setStrStatus(strStatus);
+		logger.debug("Graph status: " + g.getStrStatus());
+		for (final V_LegendItem li : legendItems) {
+			g.addLegendItem(li);
+		}
+
+		return g;
+	}
+
 
 	@Override
 	public void performPostProcess(final V_GraphQuery graphQuery) {

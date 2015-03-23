@@ -98,6 +98,7 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 
 	protected boolean parenting = false;
 
+	@Inject
 	protected HyperGraphBuilder phgb;
 
 	protected String reportLinkTitle = "1) Open Media";
