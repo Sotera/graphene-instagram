@@ -302,6 +302,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 								commentNode, G_CanonicalRelationshipType.OWNER_OF.name(),
 								G_CanonicalRelationshipType.OWNER_OF.name());
 						phgb.buildQueryForNextIteration(commenterNode);
+						commenterNode.setImgUrl(comment.getProfilePicture());
 					}
 				}
 			}
@@ -318,6 +319,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 								reportNode, G_CanonicalRelationshipType.LIKES.name(),
 								G_CanonicalRelationshipType.LIKES.name());
 						phgb.buildQueryForNextIteration(likerNode);
+						likerNode.setImgUrl(like.getProfilePicture());
 					}
 				}
 			}

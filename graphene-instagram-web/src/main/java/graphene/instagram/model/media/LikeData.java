@@ -3,13 +3,16 @@ package graphene.instagram.model.media;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.annotation.Generated;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -27,6 +30,9 @@ public class LikeData {
     
     @JsonProperty("username")
     private String username;
+    
+    @JsonProperty("profile_picture")
+    private String profilePicture;
     
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -71,7 +77,17 @@ public class LikeData {
         this.username = username;
     }
 
-    @Override
+    @JsonProperty("profile_picture")
+    public String getProfilePicture() {
+		return profilePicture;
+	}
+
+    @JsonProperty("profile_picture")
+    public void setProfilePicture(String profilePicture) {
+		this.profilePicture = profilePicture;
+	}
+
+	@Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
