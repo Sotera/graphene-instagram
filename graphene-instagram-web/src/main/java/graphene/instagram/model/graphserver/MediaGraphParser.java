@@ -261,6 +261,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 			final V_GenericNode reportNode = phgb.createOrUpdateNode(reportId, G_CanonicalPropertyType.MEDIA.name(),
 					G_CanonicalPropertyType.MEDIA.name(), null, null, null);
 			reportNode.setLabel(getReportLabel(p));
+			reportNode.setImgUrl(p.getThumbnail());
 
 			// final G_Entity entity = buildEntityFromDocument(sr, q);
 			// phgb.addReportDetails(reportNode, entity.getProperties(),
