@@ -1,5 +1,6 @@
 package graphene.instagram.model.graphserver;
 
+import graphene.dao.G_Parser;
 import graphene.instagram.model.media.CommentData;
 import graphene.instagram.model.media.LikeData;
 import graphene.instagram.model.media.Media;
@@ -51,6 +52,11 @@ public class MediaGraphParser extends InstagramParser<Media> {
 			logger.error("Error building DTO from Json for document " + sr.toString());
 			return null;
 		}
+		
+		map.put(G_Parser.REPORT_TYPE,
+				new PropertyHelper(G_Parser.REPORT_TYPE, G_Parser.REPORT_TYPE, "media", Collections
+						.singletonList(G_PropertyTag.ENTITY_TYPE)));
+
 		map.put(MEDIA_LABEL,
 				new PropertyHelper(MEDIA_LABEL, MEDIA_LABEL, getReportLabel(p), Collections
 						.singletonList(G_PropertyTag.LABEL)));
@@ -73,6 +79,8 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		map.put(MEDIA_THUMBNAIL,
 				new PropertyHelper(MEDIA_THUMBNAIL, MEDIA_THUMBNAIL, p.getThumbnail(), Collections
 						.singletonList(G_PropertyTag.LINKED_DATA)));
+		map.put(G_Parser.DTO,
+				new PropertyHelper(G_Parser.DTO, G_Parser.DTO, p, G_PropertyType.OTHER, G_PropertyTag.ENTITY_TYPE));
 
 		if ((p.getLocation().getLatitude() != null) && (p.getLocation().getLongitude() != null)) {
 			map.put(MEDIA_LOCATION_LATLON,
@@ -252,6 +260,8 @@ public class MediaGraphParser extends InstagramParser<Media> {
 			// report node does not attach to anything.
 			final V_GenericNode reportNode = phgb.createOrUpdateNode(reportId, G_CanonicalPropertyType.MEDIA.name(),
 					G_CanonicalPropertyType.MEDIA.name(), null, null, null);
+			reportNode.setLabel(getReportLabel(p));
+			reportNode.setImgUrl(p.getThumbnail());
 
 			// final G_Entity entity = buildEntityFromDocument(sr, q);
 			// phgb.addReportDetails(reportNode, entity.getProperties(),
@@ -292,6 +302,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 								commentNode, G_CanonicalRelationshipType.OWNER_OF.name(),
 								G_CanonicalRelationshipType.OWNER_OF.name());
 						phgb.buildQueryForNextIteration(commenterNode);
+						commenterNode.setImgUrl(comment.getProfilePicture());
 					}
 				}
 			}
@@ -308,6 +319,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 								reportNode, G_CanonicalRelationshipType.LIKES.name(),
 								G_CanonicalRelationshipType.LIKES.name());
 						phgb.buildQueryForNextIteration(likerNode);
+						likerNode.setImgUrl(like.getProfilePicture());
 					}
 				}
 			}
