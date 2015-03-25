@@ -349,7 +349,7 @@ public class SearchResultsView {
 				// userDataAccess.saveWorkspace(getUser().getId(),
 				// currentSelectedWorkspace);
 				// }
-				metaresults = dao.findByQuery(sq);
+				metaresults = dao.search(sq);
 
 			} catch (final Exception e) {
 				alertManager.alert(Duration.TRANSIENT, Severity.ERROR, e.getMessage());
