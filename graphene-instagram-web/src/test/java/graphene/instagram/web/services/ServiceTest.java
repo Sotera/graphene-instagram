@@ -3,7 +3,6 @@ package graphene.instagram.web.services;
 import graphene.dao.HyperGraphBuilder;
 import graphene.dao.es.ESRestAPIConnection;
 import graphene.dao.es.JestModule;
-import graphene.util.db.DBConnectionPoolService;
 import io.searchbox.client.JestClient;
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericGraph;
@@ -17,7 +16,6 @@ import org.testng.annotations.BeforeSuite;
 public class ServiceTest {
 
 	protected Registry registry;
-	protected DBConnectionPoolService cp;
 	protected ESRestAPIConnection c;
 	protected Logger logger;
 	protected HyperGraphBuilder pgb;
