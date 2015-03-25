@@ -1,5 +1,8 @@
 package graphene.instagram.web.pages;
 
+import graphene.augment.mitie.dao.MitieDAO;
+import graphene.augment.mitie.model.MitieEntity;
+import graphene.augment.mitie.model.MitieResponse;
 import graphene.business.commons.exception.DataAccessException;
 import graphene.model.idl.G_Constraint;
 import graphene.model.idl.G_SymbolConstants;
@@ -25,9 +28,6 @@ import org.apache.tapestry5.corelib.components.Zone;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.Symbol;
 import org.apache.tapestry5.services.Request;
-import org.graphene.augment.mitie.dao.MitieDAO;
-import org.graphene.augment.mitie.model.MitieEntity;
-import org.graphene.augment.mitie.model.MitieResponse;
 import org.slf4j.Logger;
 
 @PluginPage(visualType = G_VisualType.TOP, menuName = "Entity Extraction", icon = "fa fa-lg fa-fw fa-cogs")
