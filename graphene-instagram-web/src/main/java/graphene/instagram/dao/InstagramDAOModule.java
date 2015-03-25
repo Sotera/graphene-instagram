@@ -1,5 +1,8 @@
 package graphene.instagram.dao;
 
+import graphene.augment.mitie.dao.MitieDAO;
+import graphene.augment.mitie.dao.MitieDAODefaultImpl;
+import graphene.augment.mitie.web.services.MITIEModule;
 import graphene.augment.snlp.services.SentimentAnalyzer;
 import graphene.augment.snlp.services.SentimentAnalyzerImpl;
 import graphene.business.commons.exception.DataAccessException;
@@ -32,22 +35,17 @@ import graphene.instagram.dao.impl.IconServiceImpl;
 import graphene.instagram.dao.impl.es.DataSourceListDAOESImpl;
 import graphene.instagram.web.services.InstagramStartupProceduresImpl;
 import graphene.model.idl.G_DataAccess;
-import graphene.model.idl.G_SymbolConstants;
 import graphene.services.StopWordServiceDefaultImpl;
 import graphene.services.StyleServiceImpl;
 
 import org.apache.tapestry5.ioc.Configuration;
 import org.apache.tapestry5.ioc.Invokable;
-import org.apache.tapestry5.ioc.MappedConfiguration;
 import org.apache.tapestry5.ioc.ServiceBinder;
 import org.apache.tapestry5.ioc.annotations.Contribute;
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.Startup;
 import org.apache.tapestry5.ioc.annotations.SubModule;
 import org.apache.tapestry5.ioc.services.ParallelExecutor;
-import org.graphene.augment.mitie.MITIEModule;
-import org.graphene.augment.mitie.dao.MitieDAO;
-import org.graphene.augment.mitie.dao.MitieDAOImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +75,7 @@ public class InstagramDAOModule {
 		binder.bind(Extractor.class, KeywordExtractorImpl.class).withId("keyword");
 		binder.bind(Extractor.class, SentenceExtractorImpl.class).withId("sentence");
 
-		binder.bind(MitieDAO.class, MitieDAOImpl.class);
+		binder.bind(MitieDAO.class, MitieDAODefaultImpl.class);
 		binder.bind(IconService.class, IconServiceImpl.class);
 		binder.bind(StopWordService.class, StopWordServiceDefaultImpl.class);
 
@@ -160,12 +158,6 @@ public class InstagramDAOModule {
 				return uwDAO;
 			}
 		});
-	}
-
-	public void contributeApplicationDefaults(final MappedConfiguration<String, String> configuration) {
-		configuration.add(MITIEModule.ENABLED, "true");
-		configuration.override(JestModule.ES_DEFAULT_TIMEOUT, "30s");
-		configuration.override(G_SymbolConstants.ENABLE_WORKSPACES, "false");
 	}
 
 }

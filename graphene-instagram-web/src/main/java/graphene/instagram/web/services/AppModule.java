@@ -1,6 +1,8 @@
 package graphene.instagram.web.services;
 
+import graphene.augment.mitie.web.services.MITIEModule;
 import graphene.augment.snlp.web.services.AugmentSNLPModule;
+import graphene.dao.es.JestModule;
 import graphene.instagram.dao.InstagramDAOModule;
 import graphene.instagram.model.graphserver.GraphServerModule;
 import graphene.model.idl.G_SymbolConstants;
@@ -52,6 +54,10 @@ public class AppModule {
 		configuration.override(G_SymbolConstants.DEFAULT_MAX_SEARCH_RESULTS, 200);
 		configuration.override(G_SymbolConstants.ENABLE_GRAPH_QUERY_PATH, true);
 		configuration.override(G_SymbolConstants.ENABLE_DELETE_WORKSPACES, true);
+
+		configuration.add(MITIEModule.ENABLED, "true");
+		configuration.override(JestModule.ES_DEFAULT_TIMEOUT, "30s");
+		configuration.override(G_SymbolConstants.ENABLE_WORKSPACES, "false");
 	}
 
 	/**
