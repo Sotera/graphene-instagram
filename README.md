@@ -14,8 +14,9 @@ Perform the scrap with bin/run.sh &
 
 
 After doing a scrape of data:
-
+0) Setup your elastic search server and have it running.
 1) uncomment and modify the esurl to point to your elasticsearch server i.e.  http://localhost:9200
+1.1) pip install elasticsearch if you don't have it
 2) python src/ingest.py conf/config.yaml 
 3) ???
 4) Profit!

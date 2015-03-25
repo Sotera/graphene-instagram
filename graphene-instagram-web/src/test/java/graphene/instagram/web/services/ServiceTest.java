@@ -2,14 +2,12 @@ package graphene.instagram.web.services;
 
 import graphene.dao.HyperGraphBuilder;
 import graphene.dao.es.ESRestAPIConnection;
-import graphene.dao.es.JestModule;
 import io.searchbox.client.JestClient;
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericGraph;
 import mil.darpa.vande.generic.V_GenericNode;
 
 import org.apache.tapestry5.ioc.Registry;
-import org.apache.tapestry5.ioc.RegistryBuilder;
 import org.slf4j.Logger;
 import org.testng.annotations.BeforeSuite;
 
@@ -38,17 +36,17 @@ public class ServiceTest {
 	@BeforeSuite
 	public void setup() {
 
-		final RegistryBuilder builder = new RegistryBuilder();
-		builder.add(TestModule.class);
-		builder.add(JestModule.class);
-		registry = builder.build();
-		registry.performRegistryStartup();
-
-		logger = registry.getService(Logger.class);
-
-		client = registry.getService(JestClient.class);
-		pgb = registry.getService("HyperProperty", HyperGraphBuilder.class);
-		c = registry.getService(ESRestAPIConnection.class);
+		// final RegistryBuilder builder = new RegistryBuilder();
+		// builder.add(TestModule.class);
+		// builder.add(JestModule.class);
+		// registry = builder.build();
+		// registry.performRegistryStartup();
+		//
+		// logger = registry.getService(Logger.class);
+		//
+		// client = registry.getService(JestClient.class);
+		// pgb = registry.getService("HyperProperty", HyperGraphBuilder.class);
+		// c = registry.getService(ESRestAPIConnection.class);
 
 	}
 }
