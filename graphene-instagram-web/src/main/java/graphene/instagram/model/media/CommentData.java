@@ -32,6 +32,8 @@ public class CommentData {
     private String text;
     @JsonProperty("username")
     private String username;
+    @JsonProperty("profile_picture")
+    private String profilePicture;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -115,7 +117,17 @@ public class CommentData {
         this.username = username;
     }
 
-    @Override
+    @JsonProperty("profile_picture")
+    public String getProfilePicture() {
+		return profilePicture;
+	}
+
+    @JsonProperty("profile_picture")
+    public void setProfilePicture(String profilePicture) {
+		this.profilePicture = profilePicture;
+	}
+
+	@Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }

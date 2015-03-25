@@ -5,7 +5,6 @@
 	<div class="row">
 		<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 			<!-- Start results area -->
-			Hi from customer implementation
 			<t:if test="searchresults">
 				<div class="jarviswidget jarviswidget-color-darken" id="wid-id-1" data-widget-colorbutton="false"
 					data-widget-editbutton="false" data-widget-togglebutton="false" data-widget-deletebutton="false"

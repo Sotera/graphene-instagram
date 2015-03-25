@@ -58,6 +58,7 @@ public class AppModule {
 		configuration.add(MITIEModule.ENABLED, "true");
 		configuration.override(JestModule.ES_DEFAULT_TIMEOUT, "30s");
 		configuration.override(G_SymbolConstants.ENABLE_WORKSPACES, "false");
+		configuration.override(G_SymbolConstants.ENABLE_LOGGING, false);
 	}
 
 	/**
