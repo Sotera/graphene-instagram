@@ -261,6 +261,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 			final V_GenericNode reportNode = phgb.createOrUpdateNode(reportId, G_CanonicalPropertyType.MEDIA.name(),
 					G_CanonicalPropertyType.MEDIA.name(), null, null, null);
 			reportNode.setLabel(getReportLabel(p));
+			reportNode.setImgUrl(p.getThumbnail());
 			reportNode.addData(reportLinkTitle,  "<a href=\"" + p.getLink() + "\" class=\"btn btn-primary\" target=\"" + p.getId() + "\" >"
 					+ p.getId() + "</a>");
 
@@ -302,6 +303,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 								G_CanonicalPropertyType.USERNAME.name(), G_CanonicalPropertyType.USERNAME.name(),
 								commentNode, G_CanonicalRelationshipType.OWNER_OF.name(),
 								G_CanonicalRelationshipType.OWNER_OF.name());
+						commenterNode.setImgUrl(comment.getProfilePicture());
 						phgb.buildQueryForNextIteration(commenterNode);
 					}
 				}
@@ -318,6 +320,7 @@ public class MediaGraphParser extends InstagramParser<Media> {
 								G_CanonicalPropertyType.USERNAME.name(), G_CanonicalPropertyType.USERNAME.name(),
 								reportNode, G_CanonicalRelationshipType.LIKES.name(),
 								G_CanonicalRelationshipType.LIKES.name());
+						likerNode.setImgUrl(like.getProfilePicture());
 						phgb.buildQueryForNextIteration(likerNode);
 					}
 				}
