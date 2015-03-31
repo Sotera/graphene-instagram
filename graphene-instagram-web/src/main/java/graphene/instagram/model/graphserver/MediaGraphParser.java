@@ -30,9 +30,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * This is a parser for a particular document type in this application.
- * 
- * @author djue
- * 
  */
 public class MediaGraphParser extends InstagramParser<Media> {
 
@@ -95,117 +92,6 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		map.put(ALL_HASHTAGS, new PropertyHelper(ALL_HASHTAGS, ALL_HASHTAGS, G_PropertyType.OTHER, p.getAllHashTags(),
 				G_PropertyTag.STAT));
 
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_LABEL)
-		// .setKey(MEDIA_LABEL)
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(getReportLabel(p)).setType(G_PropertyType.STRING)
-		// .build()).build());
-		// list.add(G_Property.newBuilder().setFriendlyText(MEDIA_ID).setKey(MEDIA_ID)
-		// .setRange(G_SingletonRange.newBuilder().setValue(p.getId()).setType(G_PropertyType.STRING).build())
-		// .build());
-		//
-		// list.add(G_Property.newBuilder().setFriendlyText(MEDIA_LINK).setKey(MEDIA_LINK)
-		// .setRange(G_SingletonRange.newBuilder().setValue(p.getLink()).setType(G_PropertyType.STRING).build())
-		// .build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_OWNER)
-		// .setKey(MEDIA_OWNER)
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getUsername()).setType(G_PropertyType.STRING).build())
-		// .build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_CREATED_TIME)
-		// .setKey(MEDIA_CREATED_TIME)
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getCreatedTime()).setType(G_PropertyType.DATE).build())
-		// .build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_CAPTION_TEXT)
-		// .setKey(MEDIA_CAPTION_TEXT)
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getCaptionText()).setType(G_PropertyType.STRING)
-		// .build()).build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_LIKE_COUNT)
-		// .setKey(MEDIA_LIKE_COUNT)
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getLikes().getCount()).setType(G_PropertyType.LONG)
-		// .build()).build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_COMMENT_COUNT)
-		// .setKey(MEDIA_COMMENT_COUNT)
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getComments().getCount()).setType(G_PropertyType.LONG)
-		// .build()).build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_THUMBNAIL)
-		// .setKey(MEDIA_THUMBNAIL)
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getThumbnail()).setType(G_PropertyType.STRING).build())
-		// .build());
-		//
-		// if ((p.getLocation().getLatitude() != null) &&
-		// (p.getLocation().getLongitude() != null)) {
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_LOCATION_LATLON)
-		// .setKey(MEDIA_LOCATION_LATLON)
-		// .setRange(
-		// G_SingletonRange.newBuilder()
-		// .setValue(p.getLocation().getLatitude() + ", " +
-		// p.getLocation().getLongitude())
-		// .setType(G_PropertyType.GEO).build()).build());
-		//
-		// }
-		//
-		// if (ValidationUtils.isValid(p.getLocation().getName())) {
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText(MEDIA_LOCATION_NAME)
-		// .setKey(MEDIA_LOCATION_NAME)
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getLocation().getName())
-		// .setType(G_PropertyType.STRING).build()).build());
-		// }
-		//
-		// // FIXME: using literal strings instead of strings defined in
-		// // AbstractDocumentParser
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText("ATS_IN_CAPTION")
-		// .setKey("ATS_IN_CAPTION")
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getAtsInCaption()).setType(G_PropertyType.OTHER)
-		// .build()).build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText("ATS_IN_COMMENTS")
-		// .setKey("ATS_IN_COMMENTS")
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getAtsInComments()).setType(G_PropertyType.OTHER)
-		// .build()).build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText("HASHTAGS_IN_CAPTION")
-		// .setKey("HASHTAGS_IN_CAPTION")
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getHashTagsInCaption()).setType(G_PropertyType.OTHER)
-		// .build()).build());
-		// list.add(G_Property
-		// .newBuilder()
-		// .setFriendlyText("HASHTAGS_IN_COMMENTS")
-		// .setKey("HASHTAGS_IN_COMMENTS")
-		// .setRange(
-		// G_SingletonRange.newBuilder().setValue(p.getHashTagsInComments()).setType(G_PropertyType.OTHER)
-		// .build()).build());
 		final List<G_EntityTag> tags = new ArrayList<G_EntityTag>();
 		tags.add(G_EntityTag.FILE);
 		final EntityHelper entity = new EntityHelper(getIdFromDoc(p), tags, null, null, map);
@@ -238,15 +124,15 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		return null;
 	}
 
-	// This method creates a sub graph of the nodes inside a report, and a list
+	// This method creates a sub graph of the nodes inside a Instagram media page, and a list
 	// of new identifiers to search on.
 	@Override
 	public boolean parse(final G_SearchResult sr, final G_EntityQuery q) {
 		sr.getResult();
 
 		final Media p = getDTO(sr, Media.class);
-		// final Media p = getClassFromJSON(sr, Media.class);s
-		// Make nodes dealing with the report itself.
+
+		// Make nodes dealing with media page.
 		if (ValidationUtils.isValid(p)) {
 
 			final String reportId = p.getId();
@@ -267,24 +153,15 @@ public class MediaGraphParser extends InstagramParser<Media> {
 			reportNode.addData(reportLinkTitle,  "<a href=\"" + p.getLink() + "\" class=\"btn btn-primary\" target=\"" + p.getId() + "\" >"
 					+ p.getId() + "</a>");
 
-			// final G_Entity entity = buildEntityFromDocument(sr, q);
-			// phgb.addReportDetails(reportNode, entity.getProperties(),
-			// reportLinkTitle, reportLink);
-
 			phgb.addGraphQueryPath(reportNode, q);
 
 			if (ValidationUtils.isValid(p.getUsername())) {
 				final V_GenericNode ownerNode = phgb.createOrUpdateNode(p.getUsername(),
 						G_CanonicalPropertyType.USERNAME.name(), G_CanonicalPropertyType.USERNAME.name(), reportNode,
 						G_CanonicalRelationshipType.OWNER_OF.name(), G_CanonicalRelationshipType.OWNER_OF.name());
+				ownerNode.addMedia(G_PropertyTag.IMAGE.toString(), p.getProfilePicture());
 				phgb.buildQueryForNextIteration(ownerNode);
 			}
-
-			// createNodesFromFreeText(p.getCaptionText(), reportNode);
-
-			// V_GenericNode ipNode = null;
-			// final V_GenericNode marketNode = null;
-			// final V_GenericNode commodityNode = null;
 
 			for (int i = 0; i < p.getComments().getCommentsData().size(); i++) {
 				final CommentData comment = p.getComments().getCommentsData().get(i);

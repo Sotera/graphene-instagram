@@ -67,6 +67,9 @@ public class Media {
     @JsonProperty("username")
     private String username;
     
+    @JsonProperty("profile_picture")
+    private String profilePicture;
+    
     @JsonProperty("thumbnail")
     private String thumbnail;
     
@@ -253,7 +256,15 @@ public class Media {
         this.username = username;
     }
 
-    public String getThumbnail() {
+    public String getProfilePicture() {
+		return profilePicture;
+	}
+
+	public void setProfilePicture(String profilePicture) {
+		this.profilePicture = profilePicture;
+	}
+
+	public String getThumbnail() {
 		return thumbnail;
 	}
 
