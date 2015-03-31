@@ -460,6 +460,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 		// TODO Auto-generated method stub
 		skipInheritanceTypes = new ArrayList<String>();
 		skipInheritanceTypes.add("ENTITY");
+//		skipInheritanceTypes.add("IMAGE");
 	}
 
 	private void setupTraversalDepths() {
