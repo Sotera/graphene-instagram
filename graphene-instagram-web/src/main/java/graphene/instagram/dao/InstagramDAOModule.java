@@ -2,7 +2,7 @@ package graphene.instagram.dao;
 
 import graphene.augment.mitie.dao.MitieDAO;
 import graphene.augment.mitie.dao.MitieDAODefaultImpl;
-import graphene.augment.mitie.web.services.MITIEModule;
+import graphene.augment.mitie.web.services.MITIEMod;
 import graphene.augment.snlp.services.SentimentAnalyzer;
 import graphene.augment.snlp.services.SentimentAnalyzerImpl;
 import graphene.business.commons.exception.DataAccessException;
@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * @author djue
  * 
  */
-@SubModule({ JestModule.class, DefaultESUserSpaceModule.class, DAOModule.class, MITIEModule.class })
+@SubModule({ JestModule.class, DefaultESUserSpaceModule.class, DAOModule.class, MITIEMod.class })
 public class InstagramDAOModule {
 	private static Logger logger = LoggerFactory.getLogger(InstagramDAOModule.class);
 
