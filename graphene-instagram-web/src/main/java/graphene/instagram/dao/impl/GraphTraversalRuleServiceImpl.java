@@ -29,7 +29,7 @@ public class GraphTraversalRuleServiceImpl implements GraphTraversalRuleService 
 		G_Constraint rule = typeQueryMap.get(nodeType);
 		if (null == rule) {
 			// default search type
-			rule = G_Constraint.REQUIRED_EQUALS;
+			rule = G_Constraint.EQUALS;
 			logger.warn("Could not find a search type for node type " + nodeType + ", using " + rule);
 		}
 		logger.debug("Using rule " + rule + " for type " + nodeType);

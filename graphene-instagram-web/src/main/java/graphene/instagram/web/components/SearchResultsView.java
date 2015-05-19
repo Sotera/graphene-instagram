@@ -251,7 +251,7 @@ public class SearchResultsView {
 
 	public Link getAddressPivotLink(final String term) {
 		// XXX: pick the right search type based on the link value
-		final Link l = searchPage.set(null, null, G_Constraint.REQUIRED_EQUALS.name(), term, defaultMaxResults);
+		final Link l = searchPage.set(null, null, G_Constraint.EQUALS.name(), term, defaultMaxResults);
 		return l;
 	}
 
@@ -325,7 +325,7 @@ public class SearchResultsView {
 
 			final G_PropertyMatchDescriptor identifiers = G_PropertyMatchDescriptor.newBuilder().setKey("_all")
 					.setRange(new ListRangeHelper(G_PropertyType.STRING, value))
-					.setConstraint(graphene.model.idl.G_Constraint.REQUIRED_EQUALS).build();
+					.setConstraint(graphene.model.idl.G_Constraint.EQUALS).build();
 
 			try {
 				final QueryHelper sq = new QueryHelper(identifiers);// queryBuilder.build();
@@ -345,7 +345,7 @@ public class SearchResultsView {
 				// new ListRangeHelper(G_PropertyType.STRING,
 				// graphene.util.StringUtils
 				// .tokenizeToStringCollection(subType, ",")))
-				// .setConstraint(graphene.model.idl.G_Constraint.REQUIRED_EQUALS).build();
+				// .setConstraint(graphene.model.idl.G_Constraint.EQUALS).build();
 				// sq.getPropertyMatchDescriptors().add(filters);
 				// }
 				loggingDao.recordQuery(sq);
@@ -514,7 +514,7 @@ public class SearchResultsView {
 
 	public Link getNamePivotLink(final String term) {
 		// XXX: pick the right search type based on the link value
-		final Link l = searchPage.set(null, null, G_Constraint.REQUIRED_EQUALS.name(), term, defaultMaxResults);
+		final Link l = searchPage.set(null, null, G_Constraint.EQUALS.name(), term, defaultMaxResults);
 		return l;
 	}
 
@@ -573,7 +573,7 @@ public class SearchResultsView {
 	}
 
 	public Link getPivotLink(final String term) {
-		final Link l = searchPage.set(null, null, G_Constraint.COMPARE_CONTAINS.name(), term, defaultMaxResults);
+		final Link l = searchPage.set(null, null, G_Constraint.CONTAINS.name(), term, defaultMaxResults);
 		return l;
 	}
 

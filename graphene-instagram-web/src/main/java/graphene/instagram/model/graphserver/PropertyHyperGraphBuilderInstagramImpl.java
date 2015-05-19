@@ -211,7 +211,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 
 		final G_PropertyMatchDescriptor identifierList = G_PropertyMatchDescriptor.newBuilder().setKey("_all")
 				.setRange(new ListRangeHelper(G_PropertyType.STRING, graphQuery.getSearchIds()))
-				.setConstraint(G_Constraint.REQUIRED_EQUALS).build();
+				.setConstraint(G_Constraint.EQUALS).build();
 		final QueryHelper qh = new QueryHelper(identifierList);
 		qh.setTargetSchema(index);
 		queriesToRun.add(qh);
