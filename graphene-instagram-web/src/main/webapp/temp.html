@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>D3</title>
+    <!--"../../test/resources/textd3.json"-->
+    <style>
+
+        .link {
+            pointer-events: none;
+            stroke: #000;
+        }
+
+        .linkText {
+            font: 11px sans-serif;
+            text-achor: middle;
+        }
+
+        .node text {
+            pointer-events: none;
+            font: 11px sans-serif;
+        }
+
+        button {
+            position: relative;
+        }
+
+    </style>
+
+    <script type="text/javascript" src="../../../target/graphene-instagram-web/core/js/libs/jquery/jquery-2.0.3.js"></script>
+    <script src="../../../target/graphene-instagram-web/core/js/libs/d3/d3.v3.min.js"></script>
+</head>
+
+<body>
+
+<!--Defining the buttons-->
+<button id="expand" title="Expand the selected node.">EXPAND</button>
+<button id="hide" title="Hide the selected node and it's links.">HIDE</button>
+<button id="delete" title="Delete the selected node and it's links.">DELETE</button>
+
+<script>
+
+// Define the dimensions of the visualization.
+var width = innerWidth,
+        height = innerHeight,
+        color = d3.scale.category20(),
+        root;
+
+// Create an array logging what is connected to what
+var linkedByIndex = { };
+
+// Create the SVG container for the visualization and define its dimensions
+var svg = d3.select('body').append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+var link = svg.selectAll(".link"),
+        node = svg.selectAll(".node"),
+        linkText;
+
+// Mouse Event Variables
+var selected_node = null,
+        selected_link = null,
+        mousedown_node = null,
+        mousedown_link = null,
+        mouseup_node = null;
+
+// Create the force layout
+var force = d3.layout.force()
+        .size([width, height])
+        .charge(-650)
+        .linkDistance(100);
+
+var jsonStack = { };
+var jsonCount = 0;
+var jsonPath1 = {"edges":[{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"soycociyw-comment-0 PART_OF MEDIA 0SOycoCiYW"}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"PART_OF","idVal":"PART_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"soycociywcomment0","target":"soycociyw","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"itstj_teja LIKES MEDIA 0SOycoCiYW"}],"color":"blue","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"LIKES","idVal":"LIKES","label":"+1","linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"itstjteja","target":"soycociyw","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"poet51 OWNER_OF I love it\uD83C\uDDFA\uD83C\uDDF8\uD83C\uDDFA..."}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"OWNER_OF","idVal":"OWNER_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"poet51","target":"soycociywcomment2","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"jebbush_2016 OWNER_OF Awesome photo w..."}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"OWNER_OF","idVal":"OWNER_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"jebbush2016","target":"soycociywcomment0","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"apk1284 OWNER_OF MEDIA 0SOycoCiYW"}],"color":"green","count":"3","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"OWNER_OF","idVal":"OWNER_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"apk1284","target":"soycociyw","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"soycociyw-comment-1 PART_OF MEDIA 0SOycoCiYW"}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"PART_OF","idVal":"PART_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"soycociywcomment1","target":"soycociyw","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"smiami69 LIKES MEDIA 0SOycoCiYW"}],"color":"blue","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"LIKES","idVal":"LIKES","label":"+1","linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"smiami69","target":"soycociyw","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"chelcpants LIKES MEDIA 0SOycoCiYW"}],"color":"blue","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"LIKES","idVal":"LIKES","label":"+1","linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"chelcpants","target":"soycociyw","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"soycociyw-comment-2 PART_OF MEDIA 0SOycoCiYW"}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"PART_OF","idVal":"PART_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"soycociywcomment2","target":"soycociyw","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"apk1284 OWNER_OF @jebbush_2016 t..."}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"OWNER_OF","idVal":"OWNER_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"apk1284","target":"soycociywcomment1","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"b__feld LIKES MEDIA 0SOycoCiYW"}],"color":"blue","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"LIKES","idVal":"LIKES","label":"+1","linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"bfeld","target":"soycociyw","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false}],"intStatus":1,"legend":[{"color":"darkblue","text":"Selected item(s)."},{"color":"#a90329","text":"Item you searched for."},{"color":"#DE863F","text":"Comment"},{"color":"#CF78D6","text":"USERNAME"},{"color":"#5D77C4","text":"MEDIA"}],"nodes":[{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=smiami69&match=COMPARE_CONTAINS\" target=\"smiami69\" class=\"btn btn-primary\" >smiami69</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://instagramimages-a.akamaihd.net/profiles/profile_505436077_75sq_1377779560.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"smiami69","idType":"USERNAME","idVal":"smiami69","imgUrl":null,"label":"smiami69","name":"smiami69","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=jebbush_2016&match=COMPARE_CONTAINS\" target=\"jebbush_2016\" class=\"btn btn-primary\" >jebbush_2016</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-f-a.akamaihd.net/hphotos-ak-xaf1/t51.2885-19/11023192_756192097809805_1739251287_a.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"jebbush2016","idType":"USERNAME","idVal":"jebbush_2016","imgUrl":null,"label":"jebbush_2016","name":"jebbush_2016","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=itstj_teja&match=COMPARE_CONTAINS\" target=\"itstj_teja\" class=\"btn btn-primary\" >itstj_teja</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-a-a.akamaihd.net/hphotos-ak-xap1/t51.2885-19/10787805_774521312602080_286961636_a.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"itstjteja","idType":"USERNAME","idVal":"itstj_teja","imgUrl":null,"label":"itstj_teja","name":"itstj_teja","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=chelcpants&match=COMPARE_CONTAINS\" target=\"chelcpants\" class=\"btn btn-primary\" >chelcpants</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-f-a.akamaihd.net/hphotos-ak-xfa1/t51.2885-19/10802974_618635078248813_756808338_a.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"chelcpants","idType":"USERNAME","idVal":"chelcpants","imgUrl":null,"label":"chelcpants","name":"chelcpants","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"1) Open Media","val":"<a href=\"https://instagram.com/p/0SOycoCiYW/\" class=\"btn btn-primary\" target=\"0SOycoCiYW\" >0SOycoCiYW</a>"},{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=soycociyw-comment-0&match=COMPARE_CONTAINS\" target=\"soycociyw-comment-0\" class=\"btn btn-primary\" >soycociyw-comment-0</a>"},{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=soycociyw-comment-1&match=COMPARE_CONTAINS\" target=\"soycociyw-comment-1\" class=\"btn btn-primary\" >soycociyw-comment-1</a>"},{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=soycociyw-comment-2&match=COMPARE_CONTAINS\" target=\"soycociyw-comment-2\" class=\"btn btn-primary\" >soycociyw-comment-2</a>"},{"key":"MEDIA","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=0SOycoCiYW&match=COMPARE_CONTAINS\" target=\"0SOycoCiYW\" class=\"btn btn-primary\" >0SOycoCiYW</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=apk1284&match=COMPARE_CONTAINS\" target=\"apk1284\" class=\"btn btn-primary\" >apk1284</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=b__feld&match=COMPARE_CONTAINS\" target=\"b__feld\" class=\"btn btn-primary\" >b__feld</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=chelcpants&match=COMPARE_CONTAINS\" target=\"chelcpants\" class=\"btn btn-primary\" >chelcpants</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=itstj_teja&match=COMPARE_CONTAINS\" target=\"itstj_teja\" class=\"btn btn-primary\" >itstj_teja</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=smiami69&match=COMPARE_CONTAINS\" target=\"smiami69\" class=\"btn btn-primary\" >smiami69</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://scontent.cdninstagram.com/hphotos-xaf1/t51.2885-15/s150x150/e15/11008228_780115975399971_1621749164_n.jpg"}],"cluster":false,"color":"#a90329","edited":false,"expanded":false,"generated":false,"id":"soycociyw","idType":"MEDIA","idVal":"0SOycoCiYW","imgUrl":null,"label":"MEDIA 0SOycoCiYW","name":"MEDIA 0SOycoCiYW","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=b__feld&match=COMPARE_CONTAINS\" target=\"b__feld\" class=\"btn btn-primary\" >b__feld</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-a-a.akamaihd.net/hphotos-ak-xaf1/t51.2885-19/10860009_1376640769303000_1828275519_a.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"bfeld","idType":"USERNAME","idVal":"b__feld","imgUrl":null,"label":"b__feld","name":"b__feld","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=poet51&match=COMPARE_CONTAINS\" target=\"poet51\" class=\"btn btn-primary\" >poet51</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-h-a.akamaihd.net/hphotos-ak-xfp1/t51.2885-19/10326649_299063340253527_555057916_a.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"poet51","idType":"USERNAME","idVal":"poet51","imgUrl":null,"label":"poet51","name":"poet51","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=soycociyw-comment-2&match=COMPARE_CONTAINS\" target=\"soycociyw-comment-2\" class=\"btn btn-primary\" >soycociyw-comment-2</a>"},{"key":"Comment Text","val":"I love it\uD83C\uDDFA\uD83C\uDDF8\uD83C\uDDFA\uD83C\uDDF8\uD83C\uDDFA\uD83C\uDDF8"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=poet51&match=COMPARE_CONTAINS\" target=\"poet51\" class=\"btn btn-primary\" >poet51</a>"},{"key":"Links","val":"0"}],"media":[],"cluster":false,"color":"#DE863F","edited":false,"expanded":false,"generated":false,"id":"soycociywcomment2","idType":"Comment","idVal":"soycociyw-comment-2","imgUrl":null,"label":"I love it\uD83C\uDDFA\uD83C\uDDF8\uD83C\uDDFA...","name":"I love it\uD83C\uDDFA\uD83C\uDDF8\uD83C\uDDFA...","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=apk1284&match=COMPARE_CONTAINS\" target=\"apk1284\" class=\"btn btn-primary\" >apk1284</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-c-a.akamaihd.net/hphotos-ak-xap1/t51.2885-19/10727494_1436652649960482_787656145_a.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"apk1284","idType":"USERNAME","idVal":"apk1284","imgUrl":null,"label":"apk1284","name":"apk1284","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=soycociyw-comment-1&match=COMPARE_CONTAINS\" target=\"soycociyw-comment-1\" class=\"btn btn-primary\" >soycociyw-comment-1</a>"},{"key":"Comment Text","val":"@jebbush_2016 that's my dad with #Jeb. His picture came out better than mine. I had an amazing conversation with Jeb. He is so genuine and inspiring @jebbush."},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=apk1284&match=COMPARE_CONTAINS\" target=\"apk1284\" class=\"btn btn-primary\" >apk1284</a>"},{"key":"Links","val":"0"}],"media":[],"cluster":false,"color":"#DE863F","edited":false,"expanded":false,"generated":false,"id":"soycociywcomment1","idType":"Comment","idVal":"soycociyw-comment-1","imgUrl":null,"label":"@jebbush_2016 t...","name":"@jebbush_2016 t...","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=soycociyw-comment-0&match=COMPARE_CONTAINS\" target=\"soycociyw-comment-0\" class=\"btn btn-primary\" >soycociyw-comment-0</a>"},{"key":"Comment Text","val":"Awesome photo with Our future President!!!! @"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=jebbush_2016&match=COMPARE_CONTAINS\" target=\"jebbush_2016\" class=\"btn btn-primary\" >jebbush_2016</a>"},{"key":"Links","val":"0"}],"media":[],"cluster":false,"color":"#DE863F","edited":false,"expanded":false,"generated":false,"id":"soycociywcomment0","idType":"Comment","idVal":"soycociyw-comment-0","imgUrl":null,"label":"Awesome photo w...","name":"Awesome photo w...","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false}],"numEdges":11,"numNodes":11,"positionMapping":{},"strStatus":"Returning 11 nodes and 11 edges.","userId":null,"userName":null};
+var jsonPath2 = {"edges":[{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"jebbush_2016 OWNER_OF Yesssssss!! #ru..."}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"OWNER_OF","idVal":"OWNER_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"jebbush2016","target":"dabvgiiacomment0","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"apk1284 LIKES MEDIA 0dAbVGiia_"}],"color":"blue","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"LIKES","idVal":"LIKES","label":"+1","linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"apk1284","target":"dabvgiia","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"apk1284 OWNER_OF @jebbush_2016 @..."}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"OWNER_OF","idVal":"OWNER_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"apk1284","target":"dabvgiiacomment2","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"dabvgiia-comment-0 PART_OF MEDIA 0dAbVGiia_"}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"PART_OF","idVal":"PART_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"dabvgiiacomment0","target":"dabvgiia","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"dabvgiia-comment-2 PART_OF MEDIA 0dAbVGiia_"}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"PART_OF","idVal":"PART_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"dabvgiiacomment2","target":"dabvgiia","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"apk1284 OWNER_OF MEDIA 0dAbVGiia_"}],"color":"green","count":"3","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"OWNER_OF","idVal":"OWNER_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"apk1284","target":"dabvgiia","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"drebeni LIKES MEDIA 0dAbVGiia_"}],"color":"blue","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"LIKES","idVal":"LIKES","label":"+1","linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"drebeni","target":"dabvgiia","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"tigerizd OWNER_OF Yes we do"}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"OWNER_OF","idVal":"OWNER_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"tigerizd","target":"dabvgiiacomment1","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"dabvgiia-comment-1 PART_OF MEDIA 0dAbVGiia_"}],"color":"#23A4FF","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"PART_OF","idVal":"PART_OF","label":null,"linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"dabvgiiacomment1","target":"dabvgiia","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"dirkzoolander LIKES MEDIA 0dAbVGiia_"}],"color":"blue","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"LIKES","idVal":"LIKES","label":"+1","linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"dirkzoolander","target":"dabvgiia","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"amount":"0.0","attrs":[{"key":"Local_Priority","val":"0.7"},{"key":"Min_Score_Required","val":"0.5"},{"key":"Parent_Score","val":"1.0"},{"key":"Value","val":"jebbush_2016 LIKES MEDIA 0dAbVGiia_"}],"color":"blue","count":"1","day":-1,"direction":null,"edited":false,"expanded":false,"generated":false,"id":null,"idType":"LIKES","idVal":"LIKES","label":"+1","linewidth":1,"lineStyle":"solid","month":-1,"old_targets":null,"old_sources":null,"source":"jebbush2016","target":"dabvgiia","type":"","visible":true,"weight":"1","year":-1},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false}],"intStatus":1,"legend":[{"color":"darkblue","text":"Selected item(s)."},{"color":"#a90329","text":"Item you searched for."},{"color":"#DE863F","text":"Comment"},{"color":"#CF78D6","text":"USERNAME"},{"color":"#5D77C4","text":"MEDIA"}],"nodes":[{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=tigerizd&match=COMPARE_CONTAINS\" target=\"tigerizd\" class=\"btn btn-primary\" >tigerizd</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://instagramimages-a.akamaihd.net/profiles/profile_523597679_75sq_1377444424.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"tigerizd","idType":"USERNAME","idVal":"tigerizd","imgUrl":null,"label":"tigerizd","name":"tigerizd","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=dabvgiia-comment-0&match=COMPARE_CONTAINS\" target=\"dabvgiia-comment-0\" class=\"btn btn-primary\" >dabvgiia-comment-0</a>"},{"key":"Comment Text","val":"Yesssssss!! #runjebrun"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=jebbush_2016&match=COMPARE_CONTAINS\" target=\"jebbush_2016\" class=\"btn btn-primary\" >jebbush_2016</a>"},{"key":"Links","val":"0"}],"media":[],"cluster":false,"color":"#DE863F","edited":false,"expanded":false,"generated":false,"id":"dabvgiiacomment0","idType":"Comment","idVal":"dabvgiia-comment-0","imgUrl":null,"label":"Yesssssss!! #ru...","name":"Yesssssss!! #ru...","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=dabvgiia-comment-1&match=COMPARE_CONTAINS\" target=\"dabvgiia-comment-1\" class=\"btn btn-primary\" >dabvgiia-comment-1</a>"},{"key":"Comment Text","val":"Yes we do"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=tigerizd&match=COMPARE_CONTAINS\" target=\"tigerizd\" class=\"btn btn-primary\" >tigerizd</a>"},{"key":"Links","val":"0"}],"media":[],"cluster":false,"color":"#DE863F","edited":false,"expanded":false,"generated":false,"id":"dabvgiiacomment1","idType":"Comment","idVal":"dabvgiia-comment-1","imgUrl":null,"label":"Yes we do","name":"Yes we do","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=dabvgiia-comment-2&match=COMPARE_CONTAINS\" target=\"dabvgiia-comment-2\" class=\"btn btn-primary\" >dabvgiia-comment-2</a>"},{"key":"Comment Text","val":"@jebbush_2016 @jebbush @millennials4jeb I think we deserve the #BlackVote because we want to help them get jobs and succeed!"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=apk1284&match=COMPARE_CONTAINS\" target=\"apk1284\" class=\"btn btn-primary\" >apk1284</a>"},{"key":"Links","val":"0"}],"media":[],"cluster":false,"color":"#a90329","edited":false,"expanded":false,"generated":false,"id":"dabvgiiacomment2","idType":"Comment","idVal":"dabvgiia-comment-2","imgUrl":null,"label":"@jebbush_2016 @...","name":"@jebbush_2016 @...","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=dirkzoolander&match=COMPARE_CONTAINS\" target=\"dirkzoolander\" class=\"btn btn-primary\" >dirkzoolander</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-h-a.akamaihd.net/hphotos-ak-xaf1/t51.2885-19/11007799_919386371445095_154120598_a.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"dirkzoolander","idType":"USERNAME","idVal":"dirkzoolander","imgUrl":null,"label":"dirkzoolander","name":"dirkzoolander","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=jebbush_2016&match=COMPARE_CONTAINS\" target=\"jebbush_2016\" class=\"btn btn-primary\" >jebbush_2016</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-f-a.akamaihd.net/hphotos-ak-xaf1/t51.2885-19/11023192_756192097809805_1739251287_a.jpg"}],"cluster":false,"color":"#a90329","edited":false,"expanded":false,"generated":false,"id":"jebbush2016","idType":"USERNAME","idVal":"jebbush_2016","imgUrl":null,"label":"jebbush_2016","name":"jebbush_2016","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"1) Open Media","val":"<a href=\"https://instagram.com/p/0dAbVGiia_/\" class=\"btn btn-primary\" target=\"0dAbVGiia_\" >0dAbVGiia_</a>"},{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=dabvgiia-comment-0&match=COMPARE_CONTAINS\" target=\"dabvgiia-comment-0\" class=\"btn btn-primary\" >dabvgiia-comment-0</a>"},{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=dabvgiia-comment-1&match=COMPARE_CONTAINS\" target=\"dabvgiia-comment-1\" class=\"btn btn-primary\" >dabvgiia-comment-1</a>"},{"key":"Comment","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=dabvgiia-comment-2&match=COMPARE_CONTAINS\" target=\"dabvgiia-comment-2\" class=\"btn btn-primary\" >dabvgiia-comment-2</a>"},{"key":"MEDIA","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=0dAbVGiia_&match=COMPARE_CONTAINS\" target=\"0dAbVGiia_\" class=\"btn btn-primary\" >0dAbVGiia_</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=apk1284&match=COMPARE_CONTAINS\" target=\"apk1284\" class=\"btn btn-primary\" >apk1284</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=dirkzoolander&match=COMPARE_CONTAINS\" target=\"dirkzoolander\" class=\"btn btn-primary\" >dirkzoolander</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=drebeni&match=COMPARE_CONTAINS\" target=\"drebeni\" class=\"btn btn-primary\" >drebeni</a>"},{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=jebbush_2016&match=COMPARE_CONTAINS\" target=\"jebbush_2016\" class=\"btn btn-primary\" >jebbush_2016</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://scontent.cdninstagram.com/hphotos-xpa1/t51.2885-15/s150x150/e15/10245926_578415055628926_1272683351_n.jpg"}],"cluster":false,"color":"#5D77C4","edited":false,"expanded":false,"generated":false,"id":"dabvgiia","idType":"MEDIA","idVal":"0dAbVGiia_","imgUrl":null,"label":"MEDIA 0dAbVGiia_","name":"MEDIA 0dAbVGiia_","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=drebeni&match=COMPARE_CONTAINS\" target=\"drebeni\" class=\"btn btn-primary\" >drebeni</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://instagramimages-a.akamaihd.net/profiles/profile_48448780_75sq_1384153244.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"drebeni","idType":"USERNAME","idVal":"drebeni","imgUrl":null,"label":"drebeni","name":"drebeni","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false},{"bypass":null,"classes":null,"data":{"attrs":[{"key":"USERNAME","val":"<a href=\"graphene\\CombinedEntitySearchPage/?term=apk1284&match=COMPARE_CONTAINS\" target=\"apk1284\" class=\"btn btn-primary\" >apk1284</a>"},{"key":"Links","val":"0"}],"media":[{"key":"IMAGE","val":"https://igcdn-photos-c-a.akamaihd.net/hphotos-ak-xap1/t51.2885-19/10727494_1436652649960482_787656145_a.jpg"}],"cluster":false,"color":"#CF78D6","edited":false,"expanded":false,"generated":false,"id":"apk1284","idType":"USERNAME","idVal":"apk1284","imgUrl":null,"label":"apk1284","name":"apk1284","nbrLinks":0,"origin":false,"parentId":null,"reason":null,"size":16,"subNodes":null,"type":"circle","visible":true},"grabbable":true,"grabbed":false,"group":null,"locked":false,"position":null,"removed":false,"selectable":true,"selected":false}],"numEdges":11,"numNodes":9,"positionMapping":{},"strStatus":"Returning 9 nodes and 11 edges.","userId":null,"userName":null};
+function startThis() {
+    root = jsonPath1;
+    update();
+}
+
+d3.select('#expand').on("click", function() {
+    root = jsonPath2
+    update();
+});
+
+d3.select('#hide').on("click", function() {
+});
+
+d3.select('#delete').on("click", function() { deleteNode(); });
+
+var edges = [];
+var nodes = [];
+var nodesHash = {};
+
+function update() {
+
+    force.stop();
+
+    // pushes the NODE attributes in the JSON to the nodes array.
+    root.nodes.forEach(function(n) {
+            console.log("test break")
+            console.log(nodesHash);
+            nodes.push({
+                data: n.data,
+                selected: n.selected,
+                removed: n.removed
+            });
+    });
+
+    // sets the source and target to use id instead of index
+    root.edges.forEach(function(e) {
+        var sourceNode = nodes.filter(function(n) {
+                    return n.data.id === e.data.source;
+                })[0],
+                targetNode = nodes.filter(function(n) {
+                    return n.data.id === e.data.target;
+                })[0];
+
+        // push the EDGE attributes in the JSON to the edges array.
+        edges.push({
+            source: sourceNode,
+            target: targetNode,
+            data: e.data
+        });
+    });
+
+    force
+            .nodes(nodes)
+            .links(edges)
+
+    link = link
+            .data(edges);
+    link.enter().append("line")
+            .attr("class", "link")
+            .style("stroke-width", 1.5);
+    link.exit().remove();
+
+    node = node
+            .data(nodes);
+    node.enter().append("g")
+            .attr("class", "node")
+            .attr("id", function(d) { return d.data['id'] })
+        //.attr("fixed", function(d) { return d.fixed=true })
+            .call(force.drag)
+            .on('mouseover', connectedNodes)
+            .on('mouseleave', restore)
+        //.on('dblclick', highlight)
+            .on('dblclick', function(d) {
+                mousedown_node = d;
+                if(mousedown_node == selected_node) {
+                    console.log("De-selected: " + d.data['id'] );
+                    selected_node = false;
+                    return d3.select(this).style("fill", d.data['color']);
+
+                }
+                else {
+                    console.log("Selected: " + d.data['id'] );
+                    selected_node = mousedown_node;
+                    return d3.select(this).style("fill", "yellow");
+                }
+                redraw();
+                resetMouseVars();
+            });
+
+    node.exit().remove();
+
+    node.append("circle").attr("r", 11);
+    node.classed("selected", function(d) { return d === d.selected; })
+
+    node.style("fill", function(d) { return d.data['color'] }).select("circle").style("stroke", "black");
+    link.style("stroke", function(d) { return d.data['color'] });
+
+    node.append("text").text();
+
+    node.append("text")
+            .attr("dx", 12)
+            .attr("dy", ".35em")
+            .style("fill", "black")
+            .text(function (d) { return d.data['label']; });
+//                if (d.data['idType']==="Comment") {
+////                    return d.data.attrs[1].val;
+//                    return d.data['label'];
+//                }
+//                else if(d.data['idType']==="MEDIA") {
+//                    return "MEDIA " + d.data['id'];
+//                }
+//                else
+//                    return d.data['id'];
+//            });
+
+    root.edges.forEach(function (d) {
+        linkedByIndex[d.data.source + "," + d.data.target] = 1;
+    });
+
+    //resize();
+    window.addEventListener('resize', resize);
+
+    force.on("tick", function() {
+        link.attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    });
+    force.start();
+}
+
+function redraw() {
+    link = link
+            .data(edges);
+    link.enter().append("line")
+            .attr("class", "link")
+            .style("stroke-width", 1.5);
+    link.exit().remove();
+    node = node
+            .data(nodes);
+    node.enter().append("g")
+            .attr("class", "node")
+            .attr("id", function(d) { return d.data['id'] })
+        //.attr("fixed", function(d) { return d.fixed=true })
+            .call(force.drag)
+            .on('mouseover', connectedNodes)
+            .on('mouseleave', restore)
+        //.on('dblclick', highlight)
+            .on('dblclick', function(d) {
+                mousedown_node = d;
+                if(mousedown_node == selected_node) {
+                    console.log("De-selected: " + d.data['id'] );
+                    selected_node = false;
+                    return d3.select(this).style("fill", d.data['color']);
+
+                }
+                else {
+                    console.log("Selected: " + d.data['id'] );
+                    selected_node = mousedown_node;
+                    return d3.select(this).style("fill", "yellow");
+                }
+                redraw();
+                resetMouseVars();
+            });
+
+    node.exit().remove();
+    node.append("circle").attr("r", 11);
+    node.classed("selected", function(d) { return d === d.selected; })
+
+    node.style("fill", function(d) { return d.data['color'] }).select("circle").style("stroke", "black");
+    link.style("stroke", function(d) { return d.data['color'] });
+
+    root.edges.forEach(function (d) {
+        linkedByIndex[d.data.source + "," + d.data.target] = 1;
+    });
+
+    //resize();
+    window.addEventListener('resize', resize);
+
+    force.on("tick", function() {
+        link.attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+    });
+    force.start();
+}
+
+
+// Returns a list of all nodes under the root.
+function flatten(root) {
+    i = 0;
+
+    function recurse(node) {
+        if (node.children) node.children.forEach(recurse);
+        if (!node.id) node.id = ++i;
+        nodes.push(node);
+    }
+    recurse(root);
+    return nodes;
+}
+
+// This function looks up whether a pair are neighbours
+function neighboring(a, b) {
+    return linkedByIndex[a.data.id + "," + b.data.id];
+}
+
+function connectedNodes() {
+    // Remember any changes done here must have an 'undo' in the restore() function.
+
+    d = d3.select(this).node().__data__;
+
+    // Changes to all but the neighboring nodes
+    node.style("opacity", function (o) { return neighboring(d, o) | neighboring(o, d) ? 1 : 0.1; })
+            .style("stroke", function (o) { return neighboring(d, o) | neighboring(o, d) ? "black" : "black"; });
+
+    // Changes to all but neighboring links
+    link.style("opacity", function (o) { return d.index==o.source.index | d.index==o.target.index ? 1 : 0.1; })
+            .style("stroke-width", function (o) { return d.index==o.source.index | d.index==o.target.index ? 2.5 : null; });
+
+    // Maintains opacity of selected node.
+    return d3.select(this).style("opacity",1).select("circle")
+            .attr("r", 13);
+
+}
+
+function restore() {
+    node.style("opacity", 1)
+            .style("stroke", null)
+            .select("circle").attr("r", 11);
+
+    link.style("opacity", 1)
+            .style("stroke-width", 1.5);
+}
+
+// Movement of graph based on browser window resize.
+function resize() {
+    width = window.innerWidth, height = window.innerHeight;
+    svg.attr("width", width).attr("height", height);
+    force.size([width, height]).resume();
+}
+
+function resetMouseVars() {
+    mousedown_node = null;
+    mouseup_node = null;
+    mousedown_link = null;
+}
+
+// Highlighting of selected node.
+function highlight(d) {
+    mousedown_node = d;
+    if (mousedown_node.selected == false) {
+        mousedown_node.selected = true;
+        return d3.select(this).style("fill", "yellow");
+    }
+    else {
+        mousedown_node.selected = false;
+        return d3.select(this).style("fill", d.data['color']);
+    }
+}
+
+function expandNode() {
+    if (!selected_node) return;
+    if (selected_node) {
+        console.log("Expanding using: " + selected_node.data['id']);
+        ajaxCall(selected_node.data['id']);
+    }
+}
+
+function spliceLinksForNode(node) {
+    toSplice = edges.filter(
+            function(e) {
+                return (e.source === node) || (e.target === node); });
+    toSplice.map(
+            function(e) {
+                edges.splice(edges.indexOf(e), 1); });
+}
+
+// Delete node with prompt
+function deleteNode() {
+    console.log("Prompted to delete: " + selected_node);
+    if (confirm("Deleting selected elements will remove them from the graph entirely. Are you sure?")) {
+        if (!selected_node) return;
+        if (selected_node) {
+            console.log("Deleted: " + selected_node);
+            selected_node.removed = true;
+            nodes.splice(nodes.indexOf(selected_node), 1);
+            spliceLinksForNode(selected_node)
+        }
+        selected_node = null;
+        redraw();
+    }
+}
+
+startThis();
+
+</script>
+
+</body>
+</html>

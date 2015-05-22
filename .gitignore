@@ -25,6 +25,9 @@ local.properties
 # Locally stored "Eclipse launch configurations"
 *.launch
 
+# Created from intellij IDE
+.idea*
+
 # CDT-specific
 .cproject
 

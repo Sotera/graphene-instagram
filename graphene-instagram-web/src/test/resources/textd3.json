@@ -1,0 +1,19 @@
+{
+    "nodes": [
+        {"fixed":false,"bypass": null,"classes": null,"data": {"id": "imombr", "idType":"USERNAME","visible":true },"grabbable": true,"grabbed":false,"group":null,"locked": false,"position":null,"removed":false,"selectable":true,"selected":false},
+        {"fixed":false,"bypass": null,"classes": null,"data": {"id": "stephieru_", "idType":"USERNAME","visible":true },"grabbable": true,"grabbed":false,"group":null,"locked": false,"position":null,"removed":false,"selectable":true,"selected":false},
+        {"fixed":false,"bypass": null,"classes": null,"data": {"id": "rani_of_hearts", "idType":"USERNAME","visible":true },"grabbable": true,"grabbed":false,"group":null,"locked": false,"position":null,"removed":false,"selectable":true,"selected":false},
+        {"fixed":false,"bypass": null,"classes": null,"data": {"id": "jetsgirl23", "idType":"USERNAME","visible":true },"grabbable": true,"grabbed":false,"group":null,"locked": false,"position":null,"removed":false,"selectable":true,"selected":false},
+        {"fixed":false,"bypass": null,"classes": null,"data": {"id": "xpfnDTkrFA", "idType":"USERNAME","visible":true },"grabbable": true,"grabbed":false,"group":null,"locked": false,"position":null,"removed":false,"selectable":true,"selected":false},
+        {"fixed":false,"bypass": null,"classes": null,"data": {"id": "kk5647a", "idType":"USERNAME","visible":true },"grabbable": true,"grabbed":false,"group":null,"locked": false,"position":null,"removed":false,"selectable":true,"selected":false}
+    ],
+    "links": [
+        {"bypass":null,"data":{"source":"imombr","target":"stephieru_","value":1}},
+        {"bypass":null,"data":{"source":"stephieru_","target":"rani_of_hearts","value":1}},
+        {"bypass":null,"data":{"source":"rani_of_hearts","target":"jetsgirl23","value":1}},
+        {"bypass":null,"data":{"source":"kk5647a","target":"jetsgirl23","value":2}},
+        {"bypass":null,"data":{"source":"jetsgirl23","target":"stephieru_","value":1}},
+        {"bypass":null,"data":{"source":"xpfnDTkrFA","target":"jetsgirl23","value":2}}
+
+    ]
+}
