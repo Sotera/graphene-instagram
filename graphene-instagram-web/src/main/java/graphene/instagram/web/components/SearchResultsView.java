@@ -324,7 +324,7 @@ public class SearchResultsView {
 			}
 
 			final G_PropertyMatchDescriptor identifiers = G_PropertyMatchDescriptor.newBuilder().setKey("_all")
-					.setRange(new ListRangeHelper(G_PropertyType.STRING, value))
+					.setListRange(new ListRangeHelper(G_PropertyType.STRING, value))
 					.setConstraint(graphene.model.idl.G_Constraint.EQUALS).build();
 
 			try {

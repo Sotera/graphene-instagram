@@ -77,7 +77,7 @@ public class EntityExtraction extends SimpleBasePage {
 
 	public Link getNamePivotLink(final String term) {
 		// XXX: pick the right search type based on the link value
-		final Link l = searchPage.set(null, "media", G_Constraint.COMPARE_EQUALS.name(), term, defaultMaxResults);
+		final Link l = searchPage.set(null, "media", G_Constraint.EQUALS.name(), term, defaultMaxResults);
 		return l;
 	}
 

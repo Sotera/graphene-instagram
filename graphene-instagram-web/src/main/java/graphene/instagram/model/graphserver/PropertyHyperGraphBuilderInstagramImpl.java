@@ -149,7 +149,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 
 		final PropertyMatchDescriptorHelper pmdh = new PropertyMatchDescriptorHelper();
 		pmdh.setKey("_all");
-		pmdh.setRange(new SingletonRangeHelper(n.getIdVal(), G_PropertyType.STRING));
+		pmdh.setSingletonRange(new SingletonRangeHelper(n.getIdVal(), G_PropertyType.STRING));
 		pmdh.setConstraint(ruleService.getRule(n.getIdType()));
 
 		final QueryHelper qh = new QueryHelper(pmdh);
@@ -210,7 +210,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 		String strStatus = "Graph Loaded";
 
 		final G_PropertyMatchDescriptor identifierList = G_PropertyMatchDescriptor.newBuilder().setKey("_all")
-				.setRange(new ListRangeHelper(G_PropertyType.STRING, graphQuery.getSearchIds()))
+				.setListRange(new ListRangeHelper(G_PropertyType.STRING, graphQuery.getSearchIds()))
 				.setConstraint(G_Constraint.EQUALS).build();
 		final QueryHelper qh = new QueryHelper(identifierList);
 		qh.setTargetSchema(index);

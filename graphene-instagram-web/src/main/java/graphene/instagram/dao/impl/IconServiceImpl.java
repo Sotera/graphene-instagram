@@ -2,12 +2,10 @@ package graphene.instagram.dao.impl;
 
 import graphene.dao.IconService;
 import graphene.model.idl.G_EntityQuery;
-import graphene.model.idl.G_ListRange;
 import graphene.model.idl.G_Property;
 import graphene.model.idl.G_PropertyMatchDescriptor;
 import graphene.model.idl.G_PropertyTag;
 import graphene.model.idl.G_PropertyType;
-import graphene.model.idl.G_SingletonRange;
 import graphene.model.idlhelper.PropertyHelper;
 import graphene.util.Tuple;
 import graphene.util.validator.ValidationUtils;
@@ -55,16 +53,14 @@ public class IconServiceImpl implements IconService {
 		final List<G_PropertyMatchDescriptor> propertyMatchDescriptors = sq.getPropertyMatchDescriptors();
 		if (ValidationUtils.isValid(propertyMatchDescriptors)) {
 			for (final G_PropertyMatchDescriptor p : propertyMatchDescriptors) {
-				final Object range = p.getRange();
-				if (range instanceof G_SingletonRange) {
-					final G_SingletonRange s = ((G_SingletonRange) range);
-					if (s.getType().equals(G_PropertyType.STRING)) {
-						otherKeys.add((String) s.getValue());
+
+				if (ValidationUtils.isValid(p.getSingletonRange())) {
+					if (p.getSingletonRange().getType().equals(G_PropertyType.STRING)) {
+						otherKeys.add((String) p.getSingletonRange().getValue());
 					}
-				} else if (range instanceof G_ListRange) {
-					final G_ListRange lr = (G_ListRange) range;
-					if (lr.getType().equals(G_PropertyType.STRING)) {
-						for (final Object i : lr.getValues()) {
+				} else if (ValidationUtils.isValid(p.getListRange())) {
+					if (p.getListRange().getType().equals(G_PropertyType.STRING)) {
+						for (final Object i : p.getListRange().getValues()) {
 							otherKeys.add((String) i);
 						}
 					}

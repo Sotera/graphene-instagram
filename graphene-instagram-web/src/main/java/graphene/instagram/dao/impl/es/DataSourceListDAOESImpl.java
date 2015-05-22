@@ -11,8 +11,10 @@ import io.searchbox.indices.mapping.GetMapping;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.ioc.annotations.Symbol;
@@ -51,6 +53,7 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 		return Arrays.asList("media");
 	}
 
+	@Override
 	public List<String> getAvailableTypes(final String theIndex) {
 		final List<String> types = new ArrayList<String>(10);
 		// types.add(ALL_REPORTS);
@@ -90,19 +93,15 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 		return indexName;
 	}
 
-	/**
-	 * Return a list of datasets for use by the rest service. These lists are
-	 * used by the gui to allow users to choose a list, and to configure the
-	 * appropriate screens.
-	 * 
-	 * @author PWG for DARPA
-	 * 
-	 */
-	// @Override
-	// public DataSourceList getList() {
-	// final DataSourceList list = new DataSourceList();
-	//
-	// return dataSourceList;
-	// }
+	@Override
+	public Map<String, ArrayList<String>> getFieldMappings() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public HashMap<String, ArrayList<String>> getRangeMappings() {
+		return null;
+	}
 
 }
