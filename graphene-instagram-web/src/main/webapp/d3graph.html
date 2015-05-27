@@ -35,7 +35,9 @@
 
 <!--Defining the buttons-->
 <button id="expand" title="Expand the selected node.">EXPAND</button>
+<button id="expand1" title="Expand the selected node.">EXPANDLOCAL</button>
 <button id="hide" title="Hide the selected node and it's links.">HIDE</button>
+<button id="unhide" title="Unhides all nodes and it's links.">UNHIDE</button>
 <button id="delete" title="Delete the selected node and it's links.">DELETE</button>
 <button id="merge" title="Merge selected nodes.">MERGE</button>
 <button id="selected" title="Returns a list of selected nodes">SELECTED</button>
@@ -79,7 +81,7 @@ var nodesHash = {}; // Used for making nodes[] unique.
 var selectedNodes = []; // Contains all nodes that are currently selected
 var mergedNodesStore = [];
 var mergedNodes = []; // Contains the Node Fusion of nodes.
-var childEdges = []; // Contains the edges of the merged Nodes.
+var childEdges = []; // Contains the eges of the merged Nodes.
 var mnCount = 0;
 var merged;
 
@@ -103,13 +105,17 @@ d3.json(jsonPath1, function (error, json) {
 
 d3.select('#expand').on("click", function() { expandNode(); });
 
-d3.select('#hide').on("click", function() {
+d3.select('#expand1').on("click", function() {
     d3.json(jsonPath2, function(error, json) {
         // expands scope of json
         root = json
         establishGraph();
     });
 });
+
+d3.select('#hide').on("click", function() { hideNode(); });
+
+d3.select('#unhide').on("click", function() { revealNode(); });
 
 d3.select('#delete').on("click", function() { deleteNode(); });
 
@@ -258,6 +264,17 @@ function update() {
     node.append("circle").attr("r", 11);
     node.classed("selected", function(d) { return d === d.selected; })
 
+    // Node behavior for checking if the node is hidden.
+    node.style("visibility", function(d) {
+        if (d.data['visible'] === false){
+            console.log(d.data['id'] + " is hidden.")
+            return "hidden";
+        }
+        else {
+            return "visible";
+        }
+    });
+
     // Node behavior for checking if selected otherwise colors nodes to color given from JSON.
     node.style("fill", function(d) {
         if (d.selected === false) {
@@ -399,7 +416,6 @@ function deleteNode() {
     if (confirm("Deleting selected element(s) will remove them from the graph entirely.\nAre you sure? (This cannot be undone).")) {
         if (selectedNodes.length > 0) {
             for (var i = 0; i < selectedNodes.length; i++) {
-                selectedNodes[i].removed = true;
                 nodes.splice(nodes.indexOf(selectedNodes[i]), 1);
                 spliceLinksForNode(selectedNodes[i]);
             }
@@ -417,6 +433,16 @@ function spliceLinksForNode(node) {
             function(e) {
                 edges.splice(edges.indexOf(e), 1); });
 }
+
+function hideLinksForNode(node) {
+    toSplice = edges.filter(
+            function(e) {
+                return (e.source === node) || (e.target === node); });
+    toSplice.map(
+            function(e) {
+                e.data['visible'] === false; });
+}
+
 
 /*
  Create a new node X (for now give it a random label, some default position and use a timestamp Id)
@@ -473,9 +499,9 @@ function mergeNode() {
             id: "MergedNode" + mnCount,
             label: "MergedNode" + mnCount,
             childrenNodes: mergedNodesStore,
-            x: Math.random(),
-            data: mergedNodesStore,
-            index: nodes.length + 1
+//            x: Math.random(),
+//            data: mergedNodesStore,
+//            index: nodes.length + 1
         });
         mnCount++;
     }
@@ -539,6 +565,29 @@ function unMergeNode() {
     var date = new Date();
     date.getTime();
 
+}
+
+function hideNode() {
+    if (selectedNodes.length > 0) {
+        for (var i = 0; i < selectedNodes.length; i++) {
+            selectedNodes[i].data['visible'] = false;
+            selectedNodes[i].selected = false;
+            //spliceLinksForNode(selectedNodes[i]);
+        }
+    }
+    else alert("No node(s) selected.");
+    update();
+}
+
+function revealNode() {
+//    nodes.forEach(function(d) {
+//        d.removed === false;
+//    });
+    for (var i = 0; i < nodes.length; i++) {
+        nodes[i].data['visible'] = true;
+        //spliceLinksForNode(selectedNodes[i]);
+    }
+    update();
 }
 
 function inputPromptBox() {
