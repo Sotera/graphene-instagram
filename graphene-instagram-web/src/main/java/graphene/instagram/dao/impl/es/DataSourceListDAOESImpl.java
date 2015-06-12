@@ -5,6 +5,7 @@ import graphene.dao.es.BasicESDAO;
 import graphene.dao.es.ESRestAPIConnection;
 import graphene.dao.es.JestModule;
 import graphene.model.datasourcedescriptors.DataSourceList;
+import graphene.model.idl.G_Constraint;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.indices.mapping.GetMapping;
@@ -35,7 +36,7 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 
 	@Inject
 	@Symbol(JestModule.ES_SEARCH_INDEX)
-	private String indexName;
+	private String defaultIndexName;
 
 	public DataSourceListDAOESImpl() {
 	}
@@ -46,6 +47,17 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 		mapper = new ObjectMapper(); // can reuse, share globally
 		this.logger = logger;
 
+	}
+
+	@Override
+	public List<G_Constraint> getAvailableConstraints() {
+		final List<G_Constraint> list = new ArrayList<G_Constraint>();
+		list.add(G_Constraint.CONTAINS);
+		list.add(G_Constraint.FUZZY_REQUIRED);
+		list.add(G_Constraint.EQUALS);
+		list.add(G_Constraint.STARTS_WITH);
+		list.add(G_Constraint.NOT);
+		return list;
 	}
 
 	@Override
@@ -90,7 +102,7 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 
 	@Override
 	public String getDefaultSchema() {
-		return indexName;
+		return defaultIndexName;
 	}
 
 	@Override
