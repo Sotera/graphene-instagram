@@ -3,7 +3,6 @@ package graphene.instagram.model.graphserver;
 import graphene.dao.HyperGraphBuilder;
 import graphene.dao.es.impl.BasicParserESImpl;
 import graphene.hts.entityextraction.Extractor;
-import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_SymbolConstants;
 import graphene.util.StringUtils;
 import graphene.util.Triple;
@@ -11,7 +10,6 @@ import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -204,53 +202,6 @@ public abstract class InstagramParser<T> extends BasicParserESImpl<T> {
 			c.add(new Triple<String, String, String>(nodeType, StringUtils.coalesc(" ", title + ":", coalesc), coalesc));
 		}
 		return c;
-	}
-
-	public Collection<G_Entity> createExtractedEntities(final Collection<String> ids, final Extractor extractor,
-			final V_GenericNode attachTo) {
-		final Collection<G_Entity> entities = Collections.EMPTY_LIST;
-		for (final String id : ids) {
-
-			final Collection<G_Entity> newEntities = extractor.extractEntities(id);
-
-			phgb.createOrUpdateNode(id, extractor.getIdType(), extractor.getNodetype(), attachTo,
-					extractor.getRelationType(), extractor.getRelationValue());
-
-			// if (ValidationUtils.isValid(attachTo, newEntities)) {
-			// logger.debug("Extracted " + extractor.getNodetype() + ": " + id
-			// + " from narrative of " + attachTo.getId());
-			// } else {
-			// logger.warn("Creating Extracted nodes for an invalid root node!!");
-			// }
-			entities.addAll(newEntities);
-		}
-		return entities;
-	}
-
-	public void createExtractedNodes(final Collection<String> ids, final Extractor extractor,
-			final V_GenericNode attachTo) {
-		for (final String id : ids) {
-			final V_GenericNode extractedIdentifierNode = phgb.createOrUpdateNode(HIGH_MINIMUM_CERTAINTY, 1.0,
-					LOW_PRIORITY, id, extractor.getIdType(), extractor.getNodetype(), attachTo,
-					extractor.getRelationType(), extractor.getRelationValue(), 50.0);
-
-			if (ValidationUtils.isValid(attachTo, extractedIdentifierNode)) {
-
-				logger.debug("Extracted " + extractor.getNodetype() + ": " + id + " from narrative of "
-						+ attachTo.getId());
-			} else {
-				logger.warn("Creating Extracted nodes for an invalid root node!!");
-			}
-			phgb.buildQueryForNextIteration(extractedIdentifierNode);
-		}
-	}
-
-	protected void createNodesFromFreeText(final String text, final V_GenericNode attachTo) {
-		if (enableFreeTextExtraction && ValidationUtils.isValid(text)) {
-			for (final Extractor e : extractors) {
-				createExtractedNodes(e.extract(text), e, attachTo);
-			}
-		}
 	}
 
 	public HashMap<String, Extractor> getExtractorMap() {

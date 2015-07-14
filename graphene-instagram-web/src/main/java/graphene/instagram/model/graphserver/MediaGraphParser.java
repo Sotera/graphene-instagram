@@ -117,17 +117,12 @@ public class MediaGraphParser extends InstagramParser<Media> {
 		return "MEDIA";
 	}
 
-	@Override
-	public V_GenericGraph getSubGraph(final G_SearchResult sr, final G_EntityQuery q) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	// This method creates a sub graph of the nodes inside a Instagram media
 	// page, and a list
 	// of new identifiers to search on.
 	@Override
-	public boolean parse(final G_SearchResult sr, final G_EntityQuery q) {
+	public V_GenericGraph parse(final G_SearchResult sr, final G_EntityQuery q) {
+		final V_GenericGraph subgraph = new V_GenericGraph();
 		sr.getResult();
 
 		final Media p = getDTO(sr, Media.class);
@@ -139,25 +134,29 @@ public class MediaGraphParser extends InstagramParser<Media> {
 
 			// Don't scan the same object twice!
 			if (phgb.isPreviouslyScannedResult(reportId)) {
-				return false;
+				return subgraph;
 			}
+			final double inheritedScore = sr.getScore();
 
 			phgb.addScannedResult(reportId);
 			// report node does not attach to anything.
-			final V_GenericNode reportNode = phgb.createOrUpdateNode(reportId, G_CanonicalPropertyType.MEDIA.name(),
-					G_CanonicalPropertyType.MEDIA.name(), null, null, null);
+
+			final V_GenericNode reportNode = phgb.createOrUpdateNode(inheritedScore, reportId,
+					G_CanonicalPropertyType.MEDIA.name(), G_CanonicalPropertyType.MEDIA.name(), null, null, null,
+					CERTAIN, subgraph);
 			reportNode.setLabel(getReportLabel(p));
 			reportNode.addMedia(G_PropertyTag.IMAGE.toString(), p.getThumbnail());
 
 			addSafeData(reportNode, reportLinkTitle, "<a href=\"" + p.getLink()
 					+ "\" class=\"btn btn-primary\" target=\"" + p.getId() + "\" >" + p.getId() + "</a>");
 
-			phgb.addGraphQueryPath(reportNode, q);
+			phgb.addGraphQueryPath(reportNode, q, subgraph);
 
 			if (ValidationUtils.isValid(p.getUsername())) {
-				final V_GenericNode ownerNode = phgb.createOrUpdateNode(p.getUsername(),
+				final V_GenericNode ownerNode = phgb.createOrUpdateNode(LOW_MINIMUM_CERTAINTY, p.getUsername(),
 						G_CanonicalPropertyType.USERNAME.name(), G_CanonicalPropertyType.USERNAME.name(), reportNode,
-						G_CanonicalRelationshipType.OWNER_OF.name(), G_CanonicalRelationshipType.OWNER_OF.name());
+						G_CanonicalRelationshipType.OWNER_OF.name(), G_CanonicalRelationshipType.OWNER_OF.name(),
+						CERTAIN, subgraph);
 				ownerNode.addMedia(G_PropertyTag.IMAGE.toString(), p.getProfilePicture());
 				phgb.buildQueryForNextIteration(ownerNode);
 			}
@@ -168,8 +167,9 @@ public class MediaGraphParser extends InstagramParser<Media> {
 
 				if (ValidationUtils.isValid(comment)) {
 					V_GenericNode commentNode = null, commenterNode = null;
-					commentNode = phgb.createOrUpdateNode(commentId, "Comment", "Comment", reportNode,
-							G_CanonicalRelationshipType.PART_OF.name(), G_CanonicalRelationshipType.PART_OF.name());
+					commentNode = phgb.createOrUpdateNode(LOW_MINIMUM_CERTAINTY, commentId, "Comment", "Comment",
+							reportNode, G_CanonicalRelationshipType.PART_OF.name(),
+							G_CanonicalRelationshipType.PART_OF.name(), CERTAIN, subgraph);
 
 					if (ValidationUtils.isValid(commentNode)) {
 						addSafeData(commentNode, "Comment Text", comment.getText());
@@ -177,10 +177,10 @@ public class MediaGraphParser extends InstagramParser<Media> {
 					}
 
 					if (ValidationUtils.isValid(comment.getUsername())) {
-						commenterNode = phgb.createOrUpdateNode(comment.getUsername(),
+						commenterNode = phgb.createOrUpdateNode(LOW_MINIMUM_CERTAINTY, comment.getUsername(),
 								G_CanonicalPropertyType.USERNAME.name(), G_CanonicalPropertyType.USERNAME.name(),
 								commentNode, G_CanonicalRelationshipType.OWNER_OF.name(),
-								G_CanonicalRelationshipType.OWNER_OF.name());
+								G_CanonicalRelationshipType.OWNER_OF.name(), CERTAIN, subgraph);
 
 						commenterNode.addMedia(G_PropertyTag.IMAGE.toString(), comment.getProfilePicture());
 
@@ -196,10 +196,10 @@ public class MediaGraphParser extends InstagramParser<Media> {
 
 					V_GenericNode likerNode = null;
 					if (ValidationUtils.isValid(like.getUsername())) {
-						likerNode = phgb.createOrUpdateNode(like.getUsername(),
+						likerNode = phgb.createOrUpdateNode(LOW_MINIMUM_CERTAINTY, like.getUsername(),
 								G_CanonicalPropertyType.USERNAME.name(), G_CanonicalPropertyType.USERNAME.name(),
 								reportNode, G_CanonicalRelationshipType.LIKES.name(),
-								G_CanonicalRelationshipType.LIKES.name());
+								G_CanonicalRelationshipType.LIKES.name(), CERTAIN, subgraph);
 						likerNode.addMedia(G_PropertyTag.IMAGE.toString(), like.getProfilePicture());
 						phgb.buildQueryForNextIteration(likerNode);
 					}
@@ -207,6 +207,6 @@ public class MediaGraphParser extends InstagramParser<Media> {
 			}
 		}
 
-		return true;
+		return subgraph;
 	}
 }

@@ -1,35 +1,26 @@
 package graphene.instagram.model.graphserver;
 
 import graphene.dao.DocumentBuilder;
-import graphene.dao.G_Parser;
 import graphene.dao.GraphTraversalRuleService;
 import graphene.dao.es.JestModule;
 import graphene.model.idl.G_CanonicalPropertyType;
 import graphene.model.idl.G_CanonicalRelationshipType;
-import graphene.model.idl.G_Constraint;
 import graphene.model.idl.G_DataAccess;
-import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
-import graphene.model.idl.G_PropertyMatchDescriptor;
 import graphene.model.idl.G_PropertyType;
-import graphene.model.idl.G_SearchResult;
-import graphene.model.idlhelper.ListRangeHelper;
-import graphene.model.idlhelper.PropertyHelper;
 import graphene.model.idlhelper.PropertyMatchDescriptorHelper;
 import graphene.model.idlhelper.QueryHelper;
 import graphene.model.idlhelper.SingletonRangeHelper;
 import graphene.services.AbstractGraphBuilder;
-import graphene.services.ScoreComparator;
 import graphene.util.DataFormatConstants;
 import graphene.util.StringUtils;
 import graphene.util.validator.ValidationUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 import mil.darpa.vande.generic.V_GenericEdge;
 import mil.darpa.vande.generic.V_GenericGraph;
@@ -79,22 +70,14 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 	private DocumentBuilder db;
 
 	public PropertyHyperGraphBuilderInstagramImpl() {
-
-		// constant legend items regardless of what other node types are present
-		// in graph
-		// XXX: fix this, pull the highlight color and selected color from the
-		// styleservice (inject it)
-		legendItems.add(new V_LegendItem("#a90329", "Item you searched for."));
-		legendItems.add(new V_LegendItem("darkblue", "Selected item(s)."));
-
 		setupTrimmingOptions();
 		setupNodeInheritance();
 	}
 
 	@Override
 	public V_GenericEdge createEdge(final V_GenericNode a, final String relationType, final String relationValue,
-			final V_GenericNode attachTo, final double localPriority, final double inheritedScore,
-			final double nodeCertainty, final double minimumScoreRequired) {
+			final V_GenericNode attachTo, final double nodeCertainty, final double minimumScoreRequired,
+			final Map<String, V_GenericEdge> edgeList) {
 		V_GenericEdge edge = null;
 		if (ValidationUtils.isValid(attachTo)) {
 			final String key = generateEdgeId(attachTo.getId(), relationType, a.getId());
@@ -106,7 +89,6 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 				if (nodeCertainty < 100.0) {
 					edge.addData("Certainty", DataFormatConstants.formatPercent(nodeCertainty));
 					edge.setLineStyle("dotted");
-					// edge.setColor("#787878");
 				}
 				// if this is a LIKE edge
 				if (relationType.equals(G_CanonicalRelationshipType.LIKES.name())) {
@@ -121,13 +103,9 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 					edge.setColor("green");
 					edge.setCount(3);
 				}
-				edge.addData("Local_Priority", "" + localPriority);
-				edge.addData("Min_Score_Required", "" + minimumScoreRequired);
-				edge.addData("Parent_Score", "" + inheritedScore);
 				edge.addData("Value", StringUtils.coalesc(" ", a.getLabel(), relationValue, attachTo.getLabel()));
 				edgeList.put(key, edge);
 			}
-
 			// if this flag is set, we'll add the attributes to the
 			// attached node.
 			if (inheritAttributes) {
@@ -166,127 +144,18 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 	}
 
 	@Override
-	public boolean execute(final G_SearchResult t, final G_EntityQuery q) {
-		if (ValidationUtils.isValid(t.getResult())) {
-			final G_Entity entity = (G_Entity) t.getResult();
-			final String type = (String) PropertyHelper.getSingletonValue(entity.getProperties().get(
-					G_Parser.REPORT_TYPE));
-
-			final G_Parser parser = db.getParserForObject(type);
-			if (parser != null) {
-				return parser.parse(t, q);
-			} else {
-				logger.warn("No parser was found for the supplied type, but carrying on.");
-				return true;
-			}
-		} else {
-			return false;
-		}
-	}
-
-	@Override
 	public G_DataAccess getDAO() {
 		return combinedDAO;
 	}
 
 	@Override
-	public V_GenericGraph makeGraphResponse(final V_GraphQuery graphQuery) throws Exception {
-		nodeList = new HashMap<String, V_GenericNode>();
-		// edgeMap = new HashMap<String, V_GenericEdge>();
-		edgeList = new HashMap<String, V_GenericEdge>();
-		scannedQueries = new HashSet<String>();
-
-		final PriorityQueue<G_EntityQuery> queriesToRun = new PriorityQueue<G_EntityQuery>(10, new ScoreComparator());
-		Map<String, V_GenericNode> nodesFromPreviousDegree = new HashMap<String, V_GenericNode>();
-		Map<String, V_GenericEdge> edgesFromPreviousDegree = new HashMap<String, V_GenericEdge>();
-
-		if (graphQuery.getMaxHops() <= 0) {
-			return new V_GenericGraph();
-		} else {
-			logger.debug("Attempting a graph for query " + graphQuery.toString());
-		}
-
-		int intStatus = 0;
-		String strStatus = "Graph Loaded";
-
-		final G_PropertyMatchDescriptor identifierList = G_PropertyMatchDescriptor.newBuilder().setKey("_all")
-				.setListRange(new ListRangeHelper(G_PropertyType.STRING, graphQuery.getSearchIds()))
-				.setConstraint(G_Constraint.EQUALS).build();
-		final QueryHelper qh = new QueryHelper(identifierList);
-		qh.setTargetSchema(index);
-		queriesToRun.add(qh);
-
-		int currentDegree = 0;
-		for (currentDegree = 0; (currentDegree < graphQuery.getMaxHops())
-				&& (nodeList.size() < graphQuery.getMaxNodes()); currentDegree++) {
-			G_EntityQuery eq = null;
-			logger.debug("$$$$There are " + queriesToRun.size() + " queries to run in the current degree.");
-			while ((queriesToRun.size() > 0) && ((eq = queriesToRun.poll()) != null)
-					&& (nodeList.size() < graphQuery.getMaxNodes())) {
-
-				if (ValidationUtils.isValid(eq.getPropertyMatchDescriptors())) {
-					nodesFromPreviousDegree = new HashMap<String, V_GenericNode>(nodeList);
-					edgesFromPreviousDegree = new HashMap<String, V_GenericEdge>(edgeList);
-					logger.debug("Processing degree " + currentDegree);
-
-					/**
-					 * This will end up building nodes and edges, and creating
-					 * new queries for the queue
-					 */
-					logger.debug("1111=====Running query " + eq.toString());
-					getDAO().performCallback(0, eq.getMaxResult(), this, eq);
-					logger.debug("3333====After running " + eq.toString() + ", there are "
-							+ queriesToRunNextDegree.size() + " queries to run in the next degree.");
-				}
-			}// end while loop
-
-			// very important!!
-			// unscannedNodeList.clear();
-			// ////////////////////////////////////////////////
-			logger.debug("4444==== At the end of degree " + currentDegree + ", there are " + nodeList.size()
-					+ " nodes and " + edgeList.size() + " edges");
-
-			logger.debug("5555====There are " + queriesToRunNextDegree.size() + " queries to run in the next degree.");
-			queriesToRun.addAll(queriesToRunNextDegree);
-			queriesToRunNextDegree.clear();
-		}
-
-		// All hops have been done
-		// Check to see if we have too many nodes.
-		if (nodeList.size() > graphQuery.getMaxNodes()) {
-			nodeList = nodesFromPreviousDegree;
-			edgeList = edgesFromPreviousDegree;
-			intStatus = 1; // will trigger the message.
-			strStatus = "Returning only " + currentDegree + " hops, as maximum nodes you requested would be exceeded";
-		} else {
-			intStatus = 1; // will trigger the message.
-			strStatus = "Returning " + nodeList.size() + " nodes and " + edgeList.size() + " edges.";
-		}
-
-		// NOW finally add in all those unique edges.
-
-		performPostProcess(graphQuery);
-		final V_GenericGraph g = new V_GenericGraph(nodeList, edgeList);
-		g.setIntStatus(intStatus);
-		g.setStrStatus(strStatus);
-		logger.debug("Graph status: " + g.getStrStatus());
-		for (final V_LegendItem li : legendItems) {
-			g.addLegendItem(li);
-		}
-
-		return g;
-	}
-
-	@Override
-	public void performPostProcess(final V_GraphQuery graphQuery) {
-		logger.debug("Before post process, node list is size " + nodeList.size());
-		logger.debug("Before post process, edge list is size " + edgeList.size());
-
+	public V_GenericGraph performPostProcess(final V_GraphQuery graphQuery, final V_GenericGraph vg) {
+		logger.debug("Before post process, node list is size " + vg.getNodes().size());
+		logger.debug("Before post process, edge list is size " + vg.getEdges().size());
 		V_GenericNode startNode = null;
-
 		// mandatory now. you'll see why down below
 		// if (MARK_START_NODE) {
-		for (final V_GenericNode n : nodeList.values()) {
+		for (final V_GenericNode n : vg.getNodes().values()) {
 			for (final String queryId : graphQuery.getSearchIds()) {
 				final String a = n.getLabel().toLowerCase().trim();
 				final String c = n.getDataValue("text");
@@ -319,7 +188,7 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 			 * First we iterate over all the edges. Each time we see a node as
 			 * either a source or target, we increment it's count.
 			 */
-			for (final V_GenericEdge e : edgeList.values()) {
+			for (final V_GenericEdge e : vg.getEdges().values()) {
 				final String s = e.getSourceId();
 				final String t = e.getTargetId();
 				final Integer sCount = countMap.get(s);
@@ -336,64 +205,78 @@ public class PropertyHyperGraphBuilderInstagramImpl extends AbstractGraphBuilder
 				}
 			}
 
-			for (final V_GenericEdge e : edgeList.values()) {
+			/**
+			 * Next we loop over the edges again and look at the counts for each
+			 * side.
+			 * 
+			 * If the count is one and we don't want to keep the node type,
+			 * we'll skip adding it to the new list.
+			 * 
+			 */
+			for (final V_GenericEdge e : vg.getEdges().values()) {
 				boolean keepEdge = true;
 				boolean keepTarget = true;
 				boolean keepSource = true;
-				final String s = e.getSourceId();
-				final String t = e.getTargetId();
-				if (countMap.get(s) == 1) {
-					final V_GenericNode n = nodeList.get(s);
-					if (n != null) {
+				final String sourceId = e.getSourceId();
+				final String targetId = e.getTargetId();
+				final V_GenericNode sourceNode = vg.getNodes().get(sourceId);
+				final V_GenericNode targetNode = vg.getNodes().get(targetId);
+				if (countMap.get(sourceId) == 1) {
+
+					if (sourceNode != null) {
 						// If the type is not something we always have to keep,
 						// then mark the node and this edge to be pruned.
-						if (!listOfTypesToAlwaysKeep.contains(n.getIdType())) {
+						if (!listOfTypesToAlwaysKeep.contains(sourceNode.getIdType())) {
+							// aka ok to prune
 							keepSource = false;
 							keepEdge = false;
+							targetNode.inheritPropertiesOfExcept(sourceNode, skipInheritanceTypes);
 						}
 					} else {
-						logger.error("Node for source id " + s + " was null");
+						logger.error("Node for source id " + sourceId + " was null");
 					}
 				}
-				if (countMap.get(t) == 1) {
-					final V_GenericNode n = nodeList.get(t);
+				if (countMap.get(targetId) == 1) {
+					final V_GenericNode n = vg.getNodes().get(targetId);
 					if (n != null) {
 						if (!listOfTypesToAlwaysKeep.contains(n.getIdType())) {
 							keepTarget = false;
 							keepEdge = false;
+							sourceNode.inheritPropertiesOfExcept(targetNode, skipInheritanceTypes);
+
 						}
 					} else {
-						logger.error("Node for target id " + t + " was null");
+						logger.error("Node for target id " + targetId + " was null");
 					}
 				}
 				if (keepEdge == true) {
-					// if
-					// (e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name()))
-					// {
-					// e.setLineStyle("dotted");
-					// e.setWeight(50);
-					// }
-					// newEdgeList.addEdge(e);
-					if (!e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name())) {
-						newEdgeList.put(e.getId(), e);
+					if (e.getIdVal().equals(G_CanonicalRelationshipType.CONTAINED_IN.name())) {
+						e.setLineStyle("dotted");
+						e.setWeight(50);
 					}
+					newEdgeList.put(e.getId(), e);
 				}
 				if (keepSource == true) {
-					newNodeList.put(s, nodeList.get(s));
+					newNodeList.put(sourceId, vg.getNodes().get(sourceId));
 				}
 				if (keepTarget == true) {
-					newNodeList.put(t, nodeList.get(t));
+					newNodeList.put(targetId, vg.getNodes().get(targetId));
 				}
 			}
 
 			// TODO: remove legend items for node types that are no longer
 			// present in graph
-
-			nodeList = newNodeList;
-			edgeList = newEdgeList;
-			logger.debug("New node list is size " + nodeList.size());
-			logger.debug("New edge list is size " + edgeList.size());
+			final Collection<V_LegendItem> tempLegend = new ArrayList<V_LegendItem>();
+			tempLegend.add(new V_LegendItem("#a90329", "Item you searched for."));
+			tempLegend.add(new V_LegendItem("darkblue", "Selected item(s)."));
+			tempLegend.addAll(vg.getLegend());
+			vg.setLegend(tempLegend);
+			vg.setNodes(newNodeList);
+			vg.setEdges(newEdgeList);
+			logger.debug("New node list is size " + vg.getNodes().size());
+			logger.debug("New edge list is size " + vg.getEdges().size());
 		}
+		return vg;
 
 	}
 
