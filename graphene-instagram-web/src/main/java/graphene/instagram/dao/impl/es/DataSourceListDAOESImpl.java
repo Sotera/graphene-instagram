@@ -34,6 +34,9 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 	@Inject
 	@Symbol(JestModule.ES_SEARCH_INDEX)
 	private String defaultIndexName;
+	private Map<String, ArrayList<String>> fieldMappings;
+
+	private Map<String, ArrayList<String>> rangeMappings;
 
 	public DataSourceListDAOESImpl() {
 	}
@@ -43,6 +46,43 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 		this.c = c;
 		mapper = new ObjectMapper(); // can reuse, share globally
 		this.logger = logger;
+
+		fieldMappings = new HashMap<String, ArrayList<String>>();
+		rangeMappings = new HashMap<String, ArrayList<String>>();
+		final ArrayList<String> idList = new ArrayList<String>();
+		idList.add("id");
+		final ArrayList<String> nameList = new ArrayList<String>();
+		nameList.add("username");
+
+		final ArrayList<String> commentsList = new ArrayList<String>();
+		commentsList.add("text");
+		final ArrayList<String> captionsList = new ArrayList<String>();
+		captionsList.add("captionText");
+
+		final ArrayList<String> commentsAndCaptionsList = new ArrayList<String>();
+		commentsAndCaptionsList.add("text");
+		commentsAndCaptionsList.add("captionText");
+
+		fieldMappings.put("Media Id", idList);
+		fieldMappings.put("Username", nameList);
+		fieldMappings.put("Comment", commentsList);
+		fieldMappings.put("Captions", captionsList);
+		fieldMappings.put("Comments And Captions", commentsAndCaptionsList);
+
+		final ArrayList<String> locationList = new ArrayList<String>();
+		locationList.add("location");
+		fieldMappings.put("Location", locationList);
+
+		final ArrayList<String> latitudeList = new ArrayList<String>();
+		latitudeList.add("latitude");
+		rangeMappings.put("Latitude", latitudeList);
+		final ArrayList<String> longitudeList = new ArrayList<String>();
+		longitudeList.add("longitude");
+		rangeMappings.put("Longitude", longitudeList);
+
+		final ArrayList<String> dateRangeList = new ArrayList<String>();
+		dateRangeList.add("created_time");
+		rangeMappings.put("Date", dateRangeList);
 
 	}
 
@@ -65,7 +105,7 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 	@Override
 	public List<String> getAvailableTypes(final String theIndex) {
 		final List<String> types = new ArrayList<String>(10);
-		// types.add(ALL_REPORTS);
+
 		try {
 			final JestClient client = c.getClient();
 			final io.searchbox.indices.mapping.GetMapping.Builder g = new GetMapping.Builder();
@@ -104,13 +144,16 @@ public class DataSourceListDAOESImpl extends BasicESDAO implements DataSourceLis
 
 	@Override
 	public Map<String, ArrayList<String>> getFieldMappings() {
-		// TODO Auto-generated method stub
-		return null;
+		return fieldMappings;
 	}
 
 	@Override
 	public HashMap<String, ArrayList<String>> getRangeMappings() {
 		return null;
+	}
+
+	public void setFieldMappings(final Map<String, ArrayList<String>> fieldMappings) {
+		this.fieldMappings = fieldMappings;
 	}
 
 }

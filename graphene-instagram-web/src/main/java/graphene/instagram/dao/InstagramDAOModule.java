@@ -25,7 +25,6 @@ import graphene.dao.es.DefaultESUserSpaceModule;
 import graphene.dao.es.ESRestAPIConnection;
 import graphene.dao.es.ESRestAPIConnectionImpl;
 import graphene.dao.es.JestModule;
-import graphene.dao.es.impl.CombinedDAOESImpl;
 import graphene.dao.es.impl.LoggingDAODefaultESImpl;
 import graphene.dao.es.impl.MultiDocumentBuilderESImpl;
 import graphene.hts.entityextraction.Extractor;
@@ -33,9 +32,12 @@ import graphene.hts.keywords.KeywordExtractorImpl;
 import graphene.hts.sentences.SentenceExtractorImpl;
 import graphene.instagram.dao.impl.GraphTraversalRuleServiceImpl;
 import graphene.instagram.dao.impl.IconServiceImpl;
+import graphene.instagram.dao.impl.InstagramDataAccess;
+import graphene.instagram.dao.impl.InstagramEntitySearch;
 import graphene.instagram.dao.impl.es.DataSourceListDAOESImpl;
 import graphene.instagram.web.services.InstagramStartupProceduresImpl;
 import graphene.model.idl.G_DataAccess;
+import graphene.model.idl.G_EntitySearch;
 import graphene.model.idl.G_PropertyKeyTypeAccess;
 import graphene.model.idl.G_UserDataAccess;
 import graphene.services.EventServerImpl;
@@ -73,13 +75,13 @@ public class InstagramDAOModule {
 
 		binder.bind(GraphTraversalRuleService.class, GraphTraversalRuleServiceImpl.class);
 
-		// binder.bind(G_DataAccess.class, InstagramDataAccess.class);
+		binder.bind(G_EntitySearch.class, InstagramEntitySearch.class);
 		binder.bind(StyleService.class, StyleServiceImpl.class);
 
 		binder.bind(DataSourceListDAO.class, DataSourceListDAOESImpl.class).eagerLoad();
 		binder.bind(DocumentBuilder.class, MultiDocumentBuilderESImpl.class);
 
-		binder.bind(G_DataAccess.class, CombinedDAOESImpl.class);
+		binder.bind(G_DataAccess.class, InstagramDataAccess.class);
 		binder.bind(ESRestAPIConnection.class, ESRestAPIConnectionImpl.class).eagerLoad();
 
 		binder.bind(Extractor.class, KeywordExtractorImpl.class).withId("keyword");

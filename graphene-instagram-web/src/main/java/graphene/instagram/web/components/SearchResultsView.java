@@ -8,8 +8,8 @@ import graphene.instagram.model.graphserver.InstagramParser;
 import graphene.model.idl.G_Constraint;
 import graphene.model.idl.G_DataAccess;
 import graphene.model.idl.G_Entity;
+import graphene.model.idl.G_EntityQuery;
 import graphene.model.idl.G_Property;
-import graphene.model.idl.G_PropertyMatchDescriptor;
 import graphene.model.idl.G_PropertyType;
 import graphene.model.idl.G_SearchResult;
 import graphene.model.idl.G_SearchResults;
@@ -19,6 +19,7 @@ import graphene.model.idl.G_UserDataAccess;
 import graphene.model.idl.G_Workspace;
 import graphene.model.idlhelper.ListRangeHelper;
 import graphene.model.idlhelper.PropertyHelper;
+import graphene.model.idlhelper.PropertyMatchDescriptorHelper;
 import graphene.model.idlhelper.QueryHelper;
 import graphene.util.DataFormatConstants;
 import graphene.util.Triple;
@@ -216,12 +217,6 @@ public class SearchResultsView {
 	@Property
 	private String searchMatch;
 
-	// @Property
-	// private Object selectedEvent;
-
-	// @Inject
-	// private PageRenderLinkSource pageRenderLinkSource;
-
 	@Inject
 	@Symbol(G_SymbolConstants.EXT_PATH)
 	private String extPath;
@@ -304,15 +299,68 @@ public class SearchResultsView {
 	}
 
 	/**
+	 * The reason for having a separate method that takes in a G_EntityQuery
+	 * directly, is so that we can potentially have the query object persisted
+	 * or set externally when loading the component. Since the G_EntityQuery is
+	 * the lingua franca of running a query, it is the G_EntityQuery that is
+	 * persisted in workspaces, etc. If we try to restore a previously run query
+	 * from a workspace, i.e. using an auto-connected parameter from a page,
+	 * then the setupRender method can proceed directly to this method in order
+	 * to get the results.
 	 * 
-	 * @param type
+	 * @param sq
+	 * @return
+	 */
+	private G_SearchResults getEntities(final G_EntityQuery sq) {
+		G_SearchResults metaresults = null;
+		try {
+			if (isUserExists()) {
+				sq.setUserId(getUser().getId());
+				sq.setUsername(getUser().getUsername());
+			}
+
+			loggingDao.recordQuery(sq);
+			// No workspaces
+			// if (workspacesEnabled && currentSelectedWorkspaceExists) {
+			// List<G_EntityQuery> qo =
+			// currentSelectedWorkspace.getQueryObjects();
+			// if (qo == null) {
+			// qo = new ArrayList<G_EntityQuery>(1);
+			// }
+			// qo.add(sq);
+			// currentSelectedWorkspace.setQueryObjects(qo);
+			// userDataAccess.saveWorkspace(getUser().getId(),
+			// currentSelectedWorkspace);
+			// }
+			metaresults = dao.search(sq);
+			if ((metaresults == null) || (metaresults.getResults().size() == 0)) {
+				alertManager.alert(Duration.TRANSIENT, Severity.INFO, "No results found.");
+				resultShowingCount = 0;
+				resultTotalCount = 0;
+			} else {
+				alertManager.alert(Duration.TRANSIENT, Severity.SUCCESS, "Showing " + metaresults.getResults().size()
+						+ " of " + metaresults.getTotal() + " results found.");
+			}
+		} catch (final Exception e) {
+			alertManager.alert(Duration.TRANSIENT, Severity.ERROR, e.getMessage());
+			e.printStackTrace();
+			logger.error(e.getMessage());
+		}
+
+		return metaresults;
+	}
+
+	/**
+	 * 
+	 * @param schema
+	 * @param subType
+	 * @param matchType
 	 * @param value
-	 * @param searchValue2
+	 * @param maxResults
 	 * @return
 	 */
 	private G_SearchResults getEntities(final String schema, final String subType, final String matchType,
 			final String value, final int maxResults) {
-		logger.debug("=========================================================In INSTAGRAM doing INSTAGRAM STUFF");
 		G_SearchResults metaresults = null;
 		if (ValidationUtils.isValid(value)) {
 			if (ValidationUtils.isValid(matchType)) {
@@ -322,60 +370,21 @@ public class SearchResultsView {
 				}
 			} else {
 			}
+			final PropertyMatchDescriptorHelper identifiers = new PropertyMatchDescriptorHelper("_all", value);
+			identifiers.setListRange(new ListRangeHelper(G_PropertyType.STRING, value));
+			identifiers.setConstraint(graphene.model.idl.G_Constraint.EQUALS);
+			final QueryHelper sq = new QueryHelper(identifiers);
+			sq.setTargetSchema(index);
+			sq.setMaxResult((long) maxResults);
+			loggingDao.recordQuery(sq);
 
-			final G_PropertyMatchDescriptor identifiers = G_PropertyMatchDescriptor.newBuilder().setKey("_all")
-					.setListRange(new ListRangeHelper(G_PropertyType.STRING, value))
-					.setConstraint(graphene.model.idl.G_Constraint.EQUALS).build();
+			metaresults = getEntities(sq);
 
-			try {
-				final QueryHelper sq = new QueryHelper(identifiers);// queryBuilder.build();
-				sq.setTargetSchema(index);
-				sq.setMaxResult(defaultMaxResults);
-				if (isUserExists()) {
-					sq.setUserId(getUser().getId());
-					sq.setUsername(getUser().getUsername());
-				}
-				// if (ValidationUtils.isValid(subType) &&
-				// !subType.contains(DataSourceListDAO.ALL_REPORTS)) {
-				// final G_PropertyMatchDescriptor filters =
-				// G_PropertyMatchDescriptor
-				// .newBuilder()
-				// .setKey("filters")
-				// .setRange(
-				// new ListRangeHelper(G_PropertyType.STRING,
-				// graphene.util.StringUtils
-				// .tokenizeToStringCollection(subType, ",")))
-				// .setConstraint(graphene.model.idl.G_Constraint.EQUALS).build();
-				// sq.getPropertyMatchDescriptors().add(filters);
-				// }
-				loggingDao.recordQuery(sq);
-				// if (currentSelectedWorkspaceExists) {
-				// List<G_EntityQuery> qo =
-				// currentSelectedWorkspace.getQueryObjects();
-				// if (qo == null) {
-				// qo = new ArrayList<G_EntityQuery>(1);
-				// }
-				// qo.add(sq);
-				// currentSelectedWorkspace.setQueryObjects(qo);
-				//
-				// userDataAccess.saveWorkspace(getUser().getId(),
-				// currentSelectedWorkspace);
-				// }
-				metaresults = dao.search(sq);
-
-			} catch (final Exception e) {
-				alertManager.alert(Duration.TRANSIENT, Severity.ERROR, e.getMessage());
-				logger.error(e.getMessage());
-			}
-		}
-		if ((metaresults == null) || (metaresults.getResults().size() == 0)) {
-			alertManager.alert(Duration.TRANSIENT, Severity.INFO, "No results found for " + value + ".");
-			resultShowingCount = 0;
-			resultTotalCount = 0;
 		} else {
-			alertManager.alert(Duration.TRANSIENT, Severity.SUCCESS, "Showing " + metaresults.getResults().size()
-					+ " of " + metaresults.getTotal() + " results found.");
+			alertManager.alert(Duration.TRANSIENT, Severity.INFO, "Invalid value to search on.");
+
 		}
+
 		return metaresults;
 	}
 
