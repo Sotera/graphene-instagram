@@ -54,6 +54,7 @@ public class AppModule {
 		configuration.override(G_SymbolConstants.DEFAULT_MAX_SEARCH_RESULTS, 200);
 		configuration.override(G_SymbolConstants.ENABLE_GRAPH_QUERY_PATH, true);
 		configuration.override(G_SymbolConstants.ENABLE_DELETE_WORKSPACES, true);
+        configuration.add(G_SymbolConstants.INHERIT_NODE_ATTRIBUTES, true);
 
 		configuration.add(MITIEMod.ENABLED, "true");
 		configuration.override(JestModule.ES_DEFAULT_TIMEOUT, "30s");

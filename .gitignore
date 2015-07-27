@@ -37,6 +37,8 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
+# Intellij
+*.idea*
 
 # Notepad++ backups #
 *.bak
