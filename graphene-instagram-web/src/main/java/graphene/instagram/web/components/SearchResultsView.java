@@ -9,6 +9,7 @@ import graphene.model.idl.G_Constraint;
 import graphene.model.idl.G_DataAccess;
 import graphene.model.idl.G_Entity;
 import graphene.model.idl.G_EntityQuery;
+import graphene.model.idl.G_EntityQueryEvent;
 import graphene.model.idl.G_Property;
 import graphene.model.idl.G_PropertyType;
 import graphene.model.idl.G_SearchResult;
@@ -319,7 +320,7 @@ public class SearchResultsView {
 				sq.setUsername(getUser().getUsername());
 			}
 
-			loggingDao.recordQuery(sq);
+//			loggingDao.recordQuery(sq);
 			// No workspaces
 			// if (workspacesEnabled && currentSelectedWorkspaceExists) {
 			// List<G_EntityQuery> qo =
@@ -333,14 +334,18 @@ public class SearchResultsView {
 			// currentSelectedWorkspace);
 			// }
 			metaresults = dao.search(sq);
-			if ((metaresults == null) || (metaresults.getResults().size() == 0)) {
-				alertManager.alert(Duration.TRANSIENT, Severity.INFO, "No results found.");
-				resultShowingCount = 0;
-				resultTotalCount = 0;
-			} else {
-				alertManager.alert(Duration.TRANSIENT, Severity.SUCCESS, "Showing " + metaresults.getResults().size()
-						+ " of " + metaresults.getTotal() + " results found.");
-			}
+			
+			G_EntityQueryEvent qe = new G_EntityQueryEvent(sq, (long)metaresults.getResults().size());
+	        loggingDao.recordQueryEvent(qe);
+			
+//			if ((metaresults == null) || (metaresults.getResults().size() == 0)) {
+//				alertManager.alert(Duration.TRANSIENT, Severity.INFO, "No results found.");
+//				resultShowingCount = 0;
+//				resultTotalCount = 0;
+//			} else {
+//				alertManager.alert(Duration.TRANSIENT, Severity.SUCCESS, "Showing " + metaresults.getResults().size()
+//						+ " of " + metaresults.getTotal() + " results found.");
+//			}
 		} catch (final Exception e) {
 			alertManager.alert(Duration.TRANSIENT, Severity.ERROR, e.getMessage());
 			e.printStackTrace();
@@ -376,9 +381,10 @@ public class SearchResultsView {
 			final QueryHelper sq = new QueryHelper(identifiers);
 			sq.setTargetSchema(index);
 			sq.setMaxResult((long) maxResults);
-			loggingDao.recordQuery(sq);
 
 			metaresults = getEntities(sq);
+			G_EntityQueryEvent qe = new G_EntityQueryEvent(sq, (long)metaresults.getResults().size());
+	        loggingDao.recordQueryEvent(qe);
 
 		} else {
 			alertManager.alert(Duration.TRANSIENT, Severity.INFO, "Invalid value to search on.");
